@@ -1,2 +1,13 @@
-Backup and migrate
-python3 scripts/migrate-wp-orders.py "/Users/ssaini/Local Sites/beanleafbrew/app/public" --db local.db
+# Commands
+
+## Database Setup
+
+Initialize a fresh database:
+```bash
+npx tsx scripts/init-db.ts
+```
+
+Seed initial products:
+```bash
+npx tsx scripts/seed-products.ts
+```
