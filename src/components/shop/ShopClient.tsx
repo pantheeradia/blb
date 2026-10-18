@@ -4,6 +4,8 @@ import { useState, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { type Product } from "@/types";
 import { ProductCard } from "./ProductCard";
+import { ComingSoonBanner } from "./index";
+import { CATEGORIES } from "@/lib/categories";
 
 interface Props {
   products: Product[];
@@ -12,18 +14,24 @@ interface Props {
 export function ShopClient({ products }: Props) {
   const searchParams = useSearchParams();
 
-  // Build the filter list from the categories actually present in the catalog,
-  // preserving first-seen order.
+  // Build the filter list from hardcoded categories to ensure all tabs always appear.
+  // Only include the 4 required categories in the correct order.
+  const SHOP_CATEGORIES = [
+    "ground-coffee",
+    "whole-bean",
+    "instant-premix",
+    "filter-coffee-decoction",
+  ];
+
   const categories = useMemo(() => {
-    const seen = new Map<string, string>();
-    for (const p of products) {
-      if (!seen.has(p.category)) seen.set(p.category, p.categoryLabel ?? p.category);
-    }
     return [
       { label: "All", value: "all" },
-      ...Array.from(seen, ([value, label]) => ({ label, value })),
+      ...SHOP_CATEGORIES.map((slug) => {
+        const cat = CATEGORIES.find((c) => c.slug === slug);
+        return { label: cat?.name ?? slug, value: slug };
+      }),
     ];
-  }, [products]);
+  }, []);
 
   // Honour an initial ?category= from the URL, then let clicks override it.
   const urlCategory = searchParams.get("category");
@@ -32,6 +40,9 @@ export function ShopClient({ products }: Props) {
   const [active, setActive] = useState<string>(initialActive);
 
   const filtered = active === "all" ? products : products.filter((p) => p.category === active);
+
+  // Check if Instant Premix has no visible products
+  const isInstantPremixEmpty = active === "instant-premix" && filtered.length === 0;
 
   return (
     <>
@@ -51,13 +62,17 @@ export function ShopClient({ products }: Props) {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
-        {filtered.map((product) => (
-          <div key={product.id} className="flex">
-            <ProductCard product={product} />
-          </div>
-        ))}
-      </div>
+      {isInstantPremixEmpty ? (
+        <ComingSoonBanner />
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
+          {filtered.map((product) => (
+            <div key={product.id} className="flex">
+              <ProductCard product={product} />
+            </div>
+          ))}
+        </div>
+      )}
     </>
   );
 }

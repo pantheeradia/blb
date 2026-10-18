@@ -10,6 +10,8 @@ export const metadata = {
   description: "Browse our full range of specialty coffee, whole beans, and instant premix.",
 };
 
+export const revalidate = 0;
+
 export default async function ShopPage() {
   const products = await getAllProducts();
 

@@ -17,6 +17,8 @@ export async function generateStaticParams() {
   return all.map((p) => ({ slug: p.slug }));
 }
 
+export const revalidate = 0;
+
 export async function generateMetadata({ params }: Props) {
   const { slug } = await params;
   const product = await getProductBySlug(slug);
