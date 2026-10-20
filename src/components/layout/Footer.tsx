@@ -6,7 +6,6 @@ const shopLinks = [
   { label: "Whole Bean", href: "/shop?category=whole-bean" },
   { label: "Instant Premix", href: "/shop?category=instant-premix" },
   { label: "Filter Coffee Decoction", href: "/shop?category=filter-coffee-decoction" },
-  { label: "Merchandise & Accessories", href: "/shop?category=merchandise-accessories" },
 ];
 
 const companyLinks = [

@@ -1,7 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
+import { Package } from "lucide-react";
 import { type Product } from "@/types";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, getFirstValidImage } from "@/lib/utils";
 
 interface Props {
   products: Product[];
@@ -27,23 +28,34 @@ export function PremixStrip({ products }: Props) {
         </div>
 
         <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory">
-          {products.map((product) => (
-            <div key={product.id} className="flex-none w-44 snap-start">
-              <Link href={`/shop/${product.slug}`} className="group block">
-                <div className="relative h-44 bg-[#EAD9C8] overflow-hidden mb-3">
-                  <Image
-                    src={product.images[0]}
-                    alt={product.name}
-                    fill
-                    className="object-contain p-3 group-hover:scale-105 transition-transform duration-500"
-                    sizes="176px"
-                  />
-                  {product.regularPrice && (
-                    <span className="absolute top-2 left-2 bg-[#C9953C] text-[#1A0E08] text-[9px] font-semibold uppercase tracking-wider px-2 py-0.5">
-                      Sale
-                    </span>
-                  )}
-                </div>
+          {products.map((product) => {
+            const imageSrc = getFirstValidImage(product.images);
+            return (
+              <div key={product.id} className="flex-none w-44 snap-start">
+                <Link href={`/shop/${product.slug}`} className="group block">
+                  <div className="relative h-44 bg-[#EAD9C8] overflow-hidden mb-3">
+                    {imageSrc ? (
+                      <Image
+                        src={imageSrc}
+                        alt={product.name}
+                        fill
+                        className="object-contain p-3 group-hover:scale-105 transition-transform duration-500"
+                        sizes="176px"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <Package size={24} className="text-[#8B5E3C] mb-1" />
+                        <span className="text-[10px] text-[#8B5E3C] text-center px-2 line-clamp-2">
+                          {product.name}
+                        </span>
+                      </div>
+                    )}
+                    {product.regularPrice && (
+                      <span className="absolute top-2 left-2 bg-[#C9953C] text-[#1A0E08] text-[9px] font-semibold uppercase tracking-wider px-2 py-0.5">
+                        Sale
+                      </span>
+                    )}
+                  </div>
                 <p className="text-xs font-medium text-[#1A0E08] leading-snug mb-1">{product.name}</p>
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium text-[#4A2512]">{formatPrice(product.price)}</span>
@@ -53,7 +65,8 @@ export function PremixStrip({ products }: Props) {
                 </div>
               </Link>
             </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

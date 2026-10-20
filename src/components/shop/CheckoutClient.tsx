@@ -3,8 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { Package } from "lucide-react";
 import { useCartStore, lineKey, unitPrice } from "@/store/cart";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, getFirstValidImage } from "@/lib/utils";
 import { getStoredAttribution } from "@/lib/utmCapture";
 import { INDIA_STATES, getCitiesForState, OTHER_CITY } from "@/lib/indiaLocations";
 
@@ -297,10 +298,17 @@ export function CheckoutClient() {
         <div className="bg-[#FAFAF8] border border-[#D4C4B0] p-6 space-y-4">
           {items.map((item) => {
             const { product, quantity, selectedWeight, selectedEquipment } = item;
+            const imageSrc = getFirstValidImage(product.images);
             return (
               <div key={lineKey(item)} className="flex gap-3">
                 <div className="w-12 h-12 bg-[#EAD9C8] overflow-hidden flex-shrink-0">
-                  <Image src={product.images[0]} alt={product.name} width={48} height={48} className="w-full h-full object-cover" />
+                  {imageSrc ? (
+                    <Image src={imageSrc} alt={product.name} width={48} height={48} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <Package size={16} className="text-[#8B5E3C]" />
+                    </div>
+                  )}
                 </div>
                 <div className="flex-1">
                   <p className="text-xs font-medium text-[#1A0E08]">{product.name}</p>

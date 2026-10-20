@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { ShoppingBag } from "lucide-react";
+import { ShoppingBag, Package } from "lucide-react";
 import { type Product } from "@/types";
 import { formatPrice } from "@/lib/utils";
 import { useCartStore } from "@/store/cart";
@@ -21,17 +21,39 @@ export function ProductCard({ product }: Props) {
   // so the card links there instead of adding directly.
   const needsSelection = requiresOptionSelection(product.category, weightOptions, equipmentOptions);
 
+  // Safely validate image source
+  const imageSrc =
+    Array.isArray(product.images) &&
+    product.images.length > 0 &&
+    typeof product.images[0] === "string" &&
+    product.images[0].trim() !== ""
+      ? product.images[0].trim()
+      : null;
+
   return (
     <div className="group flex flex-col w-full bg-[#FAFAF8] border border-[#D4C4B0] overflow-hidden hover:shadow-md transition-shadow">
       <Link href={`/shop/${product.slug}`} className="flex flex-col flex-1">
         <div className="relative h-56 bg-[#EAD9C8] overflow-hidden flex-shrink-0">
-          <Image
-            src={product.images[0]}
-            alt={product.name}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform duration-500"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          />
+          {imageSrc ? (
+            <Image
+              src={imageSrc}
+              alt={product.name}
+              fill
+              className="object-cover group-hover:scale-105 transition-transform duration-500"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            />
+          ) : (
+            <div
+              className="absolute inset-0 flex flex-col items-center justify-center bg-[#EAD9C8]"
+              role="img"
+              aria-label={`${product.name} image unavailable`}
+            >
+              <Package size={32} className="text-[#8B5E3C] mb-2" />
+              <span className="text-xs text-[#8B5E3C] text-center px-4">
+                {product.name}
+              </span>
+            </div>
+          )}
           {product.regularPrice && (
             <span className="absolute top-3 left-3 bg-[#C9953C] text-[#1A0E08] text-[9px] font-semibold uppercase tracking-wider px-2 py-0.5">
               Sale

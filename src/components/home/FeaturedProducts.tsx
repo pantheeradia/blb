@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { Package, ShoppingBag } from "lucide-react";
 import { type Product } from "@/types";
 import { useCartStore } from "@/store/cart";
-import { ShoppingBag } from "lucide-react";
 import { formatPriceDisplay, requiresOptionSelection } from "@/lib/productOptions";
+import { getFirstValidImage } from "@/lib/utils";
 
 interface Props {
   products: Product[];
@@ -25,19 +26,30 @@ export function FeaturedProducts({ products }: Props) {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {products.map((product) => (
-            <div key={product.id} className="flex">
-              <div className="group bg-[#FAFAF8] border border-[#D4C4B0] overflow-hidden hover:shadow-md transition-shadow flex flex-col w-full">
-                <Link href={`/shop/${product.slug}`} className="flex flex-col flex-1">
-                  <div className="relative h-60 bg-[#EAD9C8] overflow-hidden flex-shrink-0">
-                    <Image
-                      src={product.images[0]}
-                      alt={product.name}
-                      fill
-                      className="object-contain p-4 group-hover:scale-105 transition-transform duration-500"
-                      sizes="(max-width: 768px) 100vw, 33vw"
-                    />
-                  </div>
+          {products.map((product) => {
+            const imageSrc = getFirstValidImage(product.images);
+            return (
+              <div key={product.id} className="flex">
+                <div className="group bg-[#FAFAF8] border border-[#D4C4B0] overflow-hidden hover:shadow-md transition-shadow flex flex-col w-full">
+                  <Link href={`/shop/${product.slug}`} className="flex flex-col flex-1">
+                    <div className="relative h-60 bg-[#EAD9C8] overflow-hidden flex-shrink-0">
+                      {imageSrc ? (
+                        <Image
+                          src={imageSrc}
+                          alt={product.name}
+                          fill
+                          className="object-contain p-4 group-hover:scale-105 transition-transform duration-500"
+                          sizes="(max-width: 768px) 100vw, 33vw"
+                        />
+                      ) : (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                          <Package size={32} className="text-[#8B5E3C] mb-2" />
+                          <span className="text-xs text-[#8B5E3C] text-center px-4">
+                            {product.name}
+                          </span>
+                        </div>
+                      )}
+                    </div>
                   <div className="p-5 flex-1">
                     <h3 className="font-serif text-lg text-[#1A0E08] mb-1">{product.name}</h3>
                     <p className="text-xs text-[#8B5E3C] leading-relaxed">{product.shortDescription}</p>
@@ -76,7 +88,8 @@ export function FeaturedProducts({ products }: Props) {
                 </div>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
 
         <div className="text-center mt-12">

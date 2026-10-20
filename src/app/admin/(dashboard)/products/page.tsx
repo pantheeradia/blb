@@ -6,6 +6,7 @@ import Link from "next/link";
 import { AddProductButton, EditProductButton, DeleteProductButton, ToggleStockButton, ToggleVisibilityButton } from "./ProductActions";
 import { SearchInput } from "../_components/SearchInput";
 import { CATEGORIES, getCategoryLabel } from "@/lib/categories";
+import { getFirstValidImage } from "@/lib/utils";
 
 const STOCK_OPTIONS = [
   { key: "all",    label: "All Stock" },
@@ -22,9 +23,13 @@ export default async function ProductsPage({
 }) {
   const { q, category: categoryParam, stock: stockParam } = await searchParams;
 
+  // Main category tabs (exclude premix subcategories)
+  const excludedSlugs = ["non-milk-tea", "milk-tea", "matcha-tea", "malt-protein"];
+  const mainCategories = CATEGORIES.filter((c) => !excludedSlugs.includes(c.slug));
+  
   const CATEGORY_TABS = [
     { key: "all", label: "All" },
-    ...CATEGORIES.map((c) => ({ key: c.slug, label: c.name })),
+    ...mainCategories.map((c) => ({ key: c.slug, label: c.name })),
   ];
 
   const activeCategory: string =
@@ -45,15 +50,22 @@ export default async function ProductsPage({
   // legacy slugs (e.g. "ground-coffee") map onto the new hardcoded categories.
   const allMatching = await db.select().from(products).where(and(stockFilter, searchFilter));
 
+  // Filter products
   const rows =
     activeCategory === "all"
       ? allMatching
+      : activeCategory === "instant-premix"
+      ? allMatching.filter((r) => excludedSlugs.includes(r.category))
       : allMatching.filter((r) => r.category === activeCategory);
 
   const categoryCount: Record<string, number> = {};
   for (const r of allMatching) {
     categoryCount[r.category] = (categoryCount[r.category] ?? 0) + 1;
   }
+  
+  // Calculate Instant Premix count (sum of all subcategories)
+  const instantPremixCount = excludedSlugs.reduce((sum, slug) => sum + (categoryCount[slug] ?? 0), 0);
+  
   const totalProductCount = allMatching.length;
 
   // baseParams for SearchInput (preserves category + stock, not q or page)
@@ -82,7 +94,9 @@ export default async function ProductsPage({
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-1 border-b border-gray-800">
           {CATEGORY_TABS.map((tab) => {
-            const count = tab.key === "all" ? totalProductCount : (categoryCount[tab.key] ?? 0);
+            const count = tab.key === "all" ? totalProductCount : 
+                          tab.key === "instant-premix" ? instantPremixCount : 
+                          (categoryCount[tab.key] ?? 0);
             const isActive = tab.key === activeCategory;
             const tabHref = `/admin/products?category=${tab.key}${search ? `&q=${encodeURIComponent(search)}` : ""}${activeStock !== "all" ? `&stock=${activeStock}` : ""}`;
             return (
@@ -165,13 +179,14 @@ export default async function ProductsPage({
             <tbody>
               {rows.map((product) => {
                 const images = JSON.parse(product.images || "[]") as string[];
+                const imageSrc = getFirstValidImage(images);
                 return (
                   <tr key={product.id} className="border-b border-gray-800 hover:bg-gray-800/40">
                     <td className="px-5 py-3">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-gray-800 overflow-hidden rounded flex-shrink-0">
-                          {images[0] ? (
-                            <Image src={images[0]} alt={product.name} width={40} height={40} className="w-full h-full object-cover" />
+                          {imageSrc ? (
+                            <Image src={imageSrc} alt={product.name} width={40} height={40} className="w-full h-full object-cover" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-gray-600 text-xs">-</div>
                           )}

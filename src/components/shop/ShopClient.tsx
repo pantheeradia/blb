@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { type Product } from "@/types";
 import { ProductCard } from "./ProductCard";
-import { ComingSoonBanner } from "./index";
+import { InstantPremixGrid } from "./InstantPremixGrid";
 import { CATEGORIES } from "@/lib/categories";
 
 interface Props {
@@ -14,22 +14,14 @@ interface Props {
 export function ShopClient({ products }: Props) {
   const searchParams = useSearchParams();
 
-  // Build the filter list from hardcoded categories to ensure all tabs always appear.
-  // Only include the 4 required categories in the correct order.
-  const SHOP_CATEGORIES = [
-    "ground-coffee",
-    "whole-bean",
-    "instant-premix",
-    "filter-coffee-decoction",
-  ];
-
   const categories = useMemo(() => {
+    // Exclude premix subcategories and merchandise from main navigation
+    const excludedSlugs = ["non-milk-tea", "milk-tea", "matcha-tea", "malt-protein", "merchandise-accessories"];
+    const filteredCategories = CATEGORIES.filter((c) => !excludedSlugs.includes(c.slug));
+    
     return [
       { label: "All", value: "all" },
-      ...SHOP_CATEGORIES.map((slug) => {
-        const cat = CATEGORIES.find((c) => c.slug === slug);
-        return { label: cat?.name ?? slug, value: slug };
-      }),
+      ...filteredCategories.map((c) => ({ label: c.name, value: c.slug })),
     ];
   }, []);
 
@@ -39,13 +31,24 @@ export function ShopClient({ products }: Props) {
     urlCategory && categories.some((c) => c.value === urlCategory) ? urlCategory : "all";
   const [active, setActive] = useState<string>(initialActive);
 
-  const filtered = active === "all" ? products : products.filter((p) => p.category === active);
+  // Filter products - special handling for instant-premix
+  const filtered = useMemo(() => {
+    if (active === "all") return products;
+    
+    if (active === "instant-premix") {
+      // Include all premix subcategories
+      const premixSlugs = ["non-milk-tea", "milk-tea", "matcha-tea", "malt-protein"];
+      return products.filter((p) => premixSlugs.includes(p.category));
+    }
+    
+    return products.filter((p) => p.category === active);
+  }, [active, products]);
 
-  // Check if Instant Premix has no visible products
-  const isInstantPremixEmpty = active === "instant-premix" && filtered.length === 0;
+  const isCategoryEmpty = filtered.length === 0;
 
   return (
     <>
+      {/* Main Category Navigation */}
       <div className="flex gap-2 flex-wrap mb-10">
         {categories.map((cat) => (
           <button
@@ -62,8 +65,13 @@ export function ShopClient({ products }: Props) {
         ))}
       </div>
 
-      {isInstantPremixEmpty ? (
-        <ComingSoonBanner />
+      {/* Instant Premix: Special layout with category cards */}
+      {active === "instant-premix" ? (
+        <InstantPremixGrid products={products} />
+      ) : isCategoryEmpty ? (
+        <div className="bg-[#FAFAF8] border border-[#D4C4B0] rounded-lg p-12 md:p-16 text-center">
+          <p className="text-sm text-[#8B5E3C]">No products available in this category yet.</p>
+        </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
           {filtered.map((product) => (

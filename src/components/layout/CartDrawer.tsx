@@ -3,9 +3,9 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { X, Plus, Minus, Trash2 } from "lucide-react";
+import { X, Plus, Minus, Trash2, Package } from "lucide-react";
 import { useCartStore, lineKey, unitPrice } from "@/store/cart";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, getFirstValidImage } from "@/lib/utils";
 
 export function CartDrawer() {
   const { isOpen, closeCart, items, updateQuantity, removeItem, total } =
@@ -55,16 +55,23 @@ export function CartDrawer() {
                 const key = lineKey(item);
                 // Prefer selected weight; fall back to the product's static weight.
                 const weightLabel = selectedWeight ?? product.weight;
+                const imageSrc = getFirstValidImage(product.images);
                 return (
                   <li key={key} className="flex gap-4">
                     <div className="w-16 h-16 rounded bg-[#EAD9C8] overflow-hidden flex-shrink-0">
-                      <Image
-                        src={product.images[0]}
-                        alt={product.name}
-                        width={64}
-                        height={64}
-                        className="w-full h-full object-cover"
-                      />
+                      {imageSrc ? (
+                        <Image
+                          src={imageSrc}
+                          alt={product.name}
+                          width={64}
+                          height={64}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <Package size={20} className="text-[#8B5E3C]" />
+                        </div>
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-[#1A0E08] leading-tight">{product.name}</p>

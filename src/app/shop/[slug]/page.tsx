@@ -1,11 +1,12 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
+import { Package } from "lucide-react";
 import { Nav } from "@/components/layout/Nav";
 import { Footer } from "@/components/layout/Footer";
 import { CartDrawer } from "@/components/layout/CartDrawer";
 import { ProductActions } from "@/components/shop/ProductActions";
 import { getProductBySlug, getAllProducts } from "@/lib/products";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, getFirstValidImage } from "@/lib/utils";
 import { formatPriceDisplay } from "@/lib/productOptions";
 
 interface Props {
@@ -34,6 +35,8 @@ export default async function ProductPage({ params }: Props) {
   const product = await getProductBySlug(slug);
   if (!product) notFound();
 
+  const imageSrc = getFirstValidImage(product.images);
+
   return (
     <>
       <Nav />
@@ -42,14 +45,23 @@ export default async function ProductPage({ params }: Props) {
         <div className="max-w-7xl mx-auto px-6 py-16">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-start">
             <div className="relative aspect-square bg-[#EAD9C8] overflow-hidden">
-              <Image
-                src={product.images[0]}
-                alt={product.name}
-                fill
-                className="object-contain p-6"
-                sizes="(max-width: 768px) 100vw, 50vw"
-                priority
-              />
+              {imageSrc ? (
+                <Image
+                  src={imageSrc}
+                  alt={product.name}
+                  fill
+                  className="object-contain p-6"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  priority
+                />
+              ) : (
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <Package size={48} className="text-[#8B5E3C] mb-3" />
+                  <span className="text-sm text-[#8B5E3C] text-center px-4">
+                    {product.name}
+                  </span>
+                </div>
+              )}
             </div>
 
             <div className="md:sticky md:top-28">

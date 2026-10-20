@@ -548,22 +548,36 @@ export function DeleteProductButton({ id, name }: { id: number; name: string }) 
 export function ToggleStockButton({ id, inStock }: { id: number; inStock: boolean }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function toggle() {
     setLoading(true);
-    await fetch(`/api/admin/products/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ inStock: !inStock }),
-    });
-    router.refresh();
-    setLoading(false);
+    setError(null);
+    try {
+      const res = await fetch(`/api/admin/products/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ inStock: !inStock }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to update stock status");
+      }
+      router.refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to update stock status");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
-    <button onClick={toggle} disabled={loading} className={`text-xs px-2 py-0.5 rounded font-medium transition-opacity disabled:opacity-50 ${inStock ? "bg-green-900 text-green-300 hover:bg-green-800" : "bg-red-900 text-red-300 hover:bg-red-800"}`}>
-      {loading ? "..." : inStock ? "In Stock" : "Out of Stock"}
-    </button>
+    <div>
+      <button onClick={toggle} disabled={loading} className={`text-xs px-2 py-0.5 rounded font-medium transition-opacity disabled:opacity-50 ${inStock ? "bg-green-900 text-green-300 hover:bg-green-800" : "bg-red-900 text-red-300 hover:bg-red-800"}`}>
+        {loading ? "..." : inStock ? "In Stock" : "Out of Stock"}
+      </button>
+      {error && <p className="text-red-400 text-xs mt-1">{error}</p>}
+    </div>
   );
 }
 
@@ -572,22 +586,37 @@ export function ToggleStockButton({ id, inStock }: { id: number; inStock: boolea
 export function ToggleVisibilityButton({ id, visible }: { id: number; visible: boolean }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function toggle() {
     setLoading(true);
-    await fetch(`/api/admin/products/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ visible: !visible }),
-    });
-    router.refresh();
-    setLoading(false);
+    setError(null);
+    try {
+      const res = await fetch(`/api/admin/products/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ visible: !visible }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to update visibility");
+      }
+      router.refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to update visibility");
+      // Revert loading state on error so user can try again
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
-    <button onClick={toggle} disabled={loading} className={`text-xs px-2 py-0.5 rounded font-medium transition-opacity disabled:opacity-50 ${visible ? "bg-sky-900 text-sky-300 hover:bg-sky-800" : "bg-gray-700 text-gray-400 hover:bg-gray-600"}`}>
-      {loading ? "..." : visible ? "Shown" : "Hidden"}
-    </button>
+    <div>
+      <button onClick={toggle} disabled={loading} className={`text-xs px-2 py-0.5 rounded font-medium transition-opacity disabled:opacity-50 ${visible ? "bg-sky-900 text-sky-300 hover:bg-sky-800" : "bg-gray-700 text-gray-400 hover:bg-gray-600"}`}>
+        {loading ? "..." : visible ? "Shown" : "Hidden"}
+      </button>
+      {error && <p className="text-red-400 text-xs mt-1">{error}</p>}
+    </div>
   );
 }
 
