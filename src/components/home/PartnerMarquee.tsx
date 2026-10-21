@@ -117,16 +117,15 @@ export function PartnerMarquee() {
         <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-[#EAD9C8] to-transparent z-10" />
         <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-[#EAD9C8] to-transparent z-10" />
 
-        <div
-          className={`flex items-center gap-8 md:gap-16 px-8 ${
-            isPaused ? "" : "animate-marquee"
-          }`}
-          style={{
-            animationPlayState: isPaused ? "paused" : "running",
-          }}
-        >
-          {[...partners, ...partners, ...partners].map((partner, index) => (
-            <a
+        <div className="overflow-hidden px-8">
+          <div
+            className="flex items-center gap-8 md:gap-16 animate-marquee"
+            style={{
+              animationPlayState: isPaused ? "paused" : "running",
+            }}
+          >
+            {[...partners, ...partners].map((partner, index) => (
+              <a
               key={`${partner.name}-${index}`}
               href={partner.website}
               target="_blank"
@@ -155,6 +154,7 @@ export function PartnerMarquee() {
               )}
             </a>
           ))}
+          </div>
         </div>
       </div>
     </section>

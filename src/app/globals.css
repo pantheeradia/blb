@@ -54,7 +54,9 @@ body {
 }
 
 .animate-marquee {
-  animation: marquee 25s linear infinite;
+  width: max-content;
+  animation: marquee 12.5s linear infinite;
+  will-change: transform;
 }
 
 @media (prefers-reduced-motion: reduce) {
