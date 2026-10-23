@@ -55,12 +55,18 @@ body {
 
 .animate-marquee {
   width: max-content;
-  animation: marquee 12.5s linear infinite;
+  animation: marquee 13.3s linear infinite;
   will-change: transform;
+}
+
+.hover\:pause-marquee:hover {
+  animation-play-state: paused;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .animate-marquee {
     animation: none;
+    justify-content: center;
+    flex-wrap: wrap;
   }
 }

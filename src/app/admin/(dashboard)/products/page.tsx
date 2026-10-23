@@ -55,16 +55,16 @@ export default async function ProductsPage({
     activeCategory === "all"
       ? allMatching
       : activeCategory === "instant-premix"
-      ? allMatching.filter((r) => excludedSlugs.includes(r.category))
+      ? allMatching.filter((r) => r.category === "instant-premix")
       : allMatching.filter((r) => r.category === activeCategory);
 
   const categoryCount: Record<string, number> = {};
   for (const r of allMatching) {
     categoryCount[r.category] = (categoryCount[r.category] ?? 0) + 1;
   }
-  
-  // Calculate Instant Premix count (sum of all subcategories)
-  const instantPremixCount = excludedSlugs.reduce((sum, slug) => sum + (categoryCount[slug] ?? 0), 0);
+
+  // Calculate Instant Premix count (products with instant-premix category)
+  const instantPremixCount = categoryCount["instant-premix"] ?? 0;
   
   const totalProductCount = allMatching.length;
 

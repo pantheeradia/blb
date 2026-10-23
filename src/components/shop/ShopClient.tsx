@@ -4,7 +4,6 @@ import { useState, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { type Product } from "@/types";
 import { ProductCard } from "./ProductCard";
-import { InstantPremixGrid } from "./InstantPremixGrid";
 import { CATEGORIES } from "@/lib/categories";
 
 interface Props {
@@ -18,7 +17,7 @@ export function ShopClient({ products }: Props) {
     // Exclude premix subcategories and merchandise from main navigation
     const excludedSlugs = ["non-milk-tea", "milk-tea", "matcha-tea", "malt-protein", "merchandise-accessories"];
     const filteredCategories = CATEGORIES.filter((c) => !excludedSlugs.includes(c.slug));
-    
+
     return [
       { label: "All", value: "all" },
       ...filteredCategories.map((c) => ({ label: c.name, value: c.slug })),
@@ -34,13 +33,11 @@ export function ShopClient({ products }: Props) {
   // Filter products - special handling for instant-premix
   const filtered = useMemo(() => {
     if (active === "all") return products;
-    
+
     if (active === "instant-premix") {
-      // Include all premix subcategories
-      const premixSlugs = ["non-milk-tea", "milk-tea", "matcha-tea", "malt-protein"];
-      return products.filter((p) => premixSlugs.includes(p.category));
+      return products.filter((p) => p.category === "instant-premix");
     }
-    
+
     return products.filter((p) => p.category === active);
   }, [active, products]);
 
@@ -65,9 +62,42 @@ export function ShopClient({ products }: Props) {
         ))}
       </div>
 
-      {/* Instant Premix: Special layout with category cards */}
+      {/* Instant Premix: Special layout with Coming Soon banner */}
       {active === "instant-premix" ? (
-        <InstantPremixGrid products={products} />
+        isCategoryEmpty ? (
+          <div className="flex items-center justify-center py-16">
+            <div className="text-center max-w-md px-8 py-12 rounded-2xl border border-[#8B5E3C] shadow-lg overflow-hidden relative">
+              {/* Background image with overlay */}
+              <div
+                className="absolute inset-0 bg-cover bg-center"
+                style={{
+                  backgroundImage: "url('/images/Roasted-Beans.avif')",
+                }}
+              />
+              <div className="absolute inset-0 bg-[#F7F0E6]/85" />
+              {/* Content */}
+              <div className="relative z-10">
+                <p className="text-[10px] uppercase tracking-[0.3em] text-[#C9953C] mb-6">
+                  COMING SOON
+                </p>
+                <h2 className="font-serif text-2xl md:text-3xl text-[#1A0E08] mb-6 font-bold">
+                  Something Special Is Brewing!
+                </h2>
+                <p className="text-[#4A2512] text-sm leading-relaxed">
+                  Our Instant Premix collection is brewing behind the scenes. Stay tuned for something delicious.
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
+            {filtered.map((product) => (
+              <div key={product.id} className="flex">
+                <ProductCard product={product} />
+              </div>
+            ))}
+          </div>
+        )
       ) : isCategoryEmpty ? (
         <div className="bg-[#FAFAF8] border border-[#D4C4B0] rounded-lg p-12 md:p-16 text-center">
           <p className="text-sm text-[#8B5E3C]">No products available in this category yet.</p>
