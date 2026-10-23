@@ -6,6 +6,18 @@ export interface WeightOption {
   price: number;
 }
 
+export interface InstantPremixVariant {
+  name: string;
+  weight: string;
+  sellingPrice: number;
+  regularPrice: number | null;
+}
+
+export interface InstantPremixOptions {
+  productType: string | null;
+  variants: InstantPremixVariant[];
+}
+
 export interface Product {
   id: number;
   slug: string;
@@ -32,6 +44,8 @@ export interface Product {
   // Admin-configured selectable options for ground coffee.
   weightOptions?: WeightOption[];
   brewingEquipmentOptions?: string[];
+  // Admin-configured options for instant premix.
+  instantPremixOptions?: InstantPremixOptions;
 }
 
 export interface CartItem {
@@ -42,6 +56,10 @@ export interface CartItem {
   // Unit price for the chosen weight variant; overrides product.price when set.
   selectedWeightPrice?: number;
   selectedEquipment?: string;
+  // Customer-selected variant (instant premix only).
+  selectedVariant?: string;
+  // Unit price for the chosen variant; overrides product.price when set.
+  selectedVariantPrice?: number;
 }
 
 export interface Order {

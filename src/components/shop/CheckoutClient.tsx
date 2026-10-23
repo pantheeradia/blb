@@ -111,6 +111,7 @@ export function CheckoutClient() {
       quantity: i.quantity,
       selectedWeight: i.selectedWeight ?? null,
       selectedEquipment: i.selectedEquipment ?? null,
+      selectedVariant: i.selectedVariant ?? null,
     }));
     const couponCode = appliedCoupon?.code ?? null;
 
@@ -300,7 +301,11 @@ export function CheckoutClient() {
             return (
               <div key={lineKey(item)} className="flex gap-3">
                 <div className="w-12 h-12 bg-[#EAD9C8] overflow-hidden flex-shrink-0">
-                  <Image src={product.images[0]} alt={product.name} width={48} height={48} className="w-full h-full object-cover" />
+                  {product.images[0] ? (
+                    <Image src={product.images[0]} alt={product.name} width={48} height={48} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-[#8B5E3C] text-xs">No img</div>
+                  )}
                 </div>
                 <div className="flex-1">
                   <p className="text-xs font-medium text-[#1A0E08]">{product.name}</p>

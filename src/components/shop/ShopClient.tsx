@@ -4,6 +4,8 @@ import { useState, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { type Product } from "@/types";
 import { ProductCard } from "./ProductCard";
+import { ProductGroupCard } from "./ProductGroupCard";
+import { groupProducts } from "@/lib/groupProducts";
 import { CATEGORIES } from "@/lib/categories";
 
 interface Props {
@@ -63,7 +65,7 @@ export function ShopClient({ products }: Props) {
         ))}
       </div>
 
-      {/* Instant Premix: Special layout with Coming Soon banner */}
+      {/* Instant Premix: Special layout with Coming Soon banner or grouped cards */}
       {active === "instant-premix" ? (
         isCategoryEmpty ? (
           <div className="flex items-center justify-center py-16">
@@ -91,13 +93,16 @@ export function ShopClient({ products }: Props) {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
-            {filtered.map((product) => (
-              <div key={product.id} className="flex">
-                <ProductCard product={product} />
-              </div>
-            ))}
-          </div>
+          <>
+            {/* Grouped cards for Instant Premix */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
+              {groupProducts(filtered).map((group) => (
+                <div key={group.groupKey} className="flex">
+                  <ProductGroupCard group={group} />
+                </div>
+              ))}
+            </div>
+          </>
         )
       ) : isCategoryEmpty ? (
         <div className="bg-[#FAFAF8] border border-[#D4C4B0] rounded-lg p-12 md:p-16 text-center">

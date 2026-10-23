@@ -51,26 +51,39 @@ export function CartDrawer() {
           ) : (
             <ul className="space-y-5">
               {items.map((item) => {
-                const { product, quantity, selectedWeight, selectedEquipment } = item;
+                const { product, quantity, selectedWeight, selectedEquipment, selectedVariant } = item;
                 const key = lineKey(item);
                 // Prefer selected weight; fall back to the product's static weight.
                 const weightLabel = selectedWeight ?? product.weight;
+                // Get variant details if selected
+                const variant = selectedVariant
+                  ? product.instantPremixOptions?.variants.find((v) => v.name === selectedVariant)
+                  : null;
                 return (
                   <li key={key} className="flex gap-4">
                     <div className="w-16 h-16 rounded bg-[#EAD9C8] overflow-hidden flex-shrink-0">
-                      <Image
-                        src={product.images[0]}
-                        alt={product.name}
-                        width={64}
-                        height={64}
-                        className="w-full h-full object-cover"
-                      />
+                      {product.images[0] ? (
+                        <Image
+                          src={product.images[0]}
+                          alt={product.name}
+                          width={64}
+                          height={64}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-[#8B5E3C] text-xs">No img</div>
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-[#1A0E08] leading-tight">{product.name}</p>
                       {weightLabel && <p className="text-xs text-[#8B5E3C] mt-0.5">{weightLabel}</p>}
                       {selectedEquipment && (
                         <p className="text-xs text-[#8B5E3C] mt-0.5">Brewing: {selectedEquipment}</p>
+                      )}
+                      {variant && (
+                        <p className="text-xs text-[#8B5E3C] mt-0.5">
+                          {variant.name} {variant.weight ? `(${variant.weight})` : ""}
+                        </p>
                       )}
                       <p className="text-sm font-medium text-[#4A2512] mt-1">{formatPrice(unitPrice(item))}</p>
                     </div>

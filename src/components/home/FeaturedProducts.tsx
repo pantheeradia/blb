@@ -30,13 +30,19 @@ export function FeaturedProducts({ products }: Props) {
               <div className="group bg-[#FAFAF8] border border-[#D4C4B0] overflow-hidden hover:shadow-md transition-shadow flex flex-col w-full">
                 <Link href={`/shop/${product.slug}`} className="flex flex-col flex-1">
                   <div className="relative h-60 bg-[#EAD9C8] overflow-hidden flex-shrink-0">
-                    <Image
-                      src={product.images[0]}
-                      alt={product.name}
-                      fill
-                      className="object-contain p-4 group-hover:scale-105 transition-transform duration-500"
-                      sizes="(max-width: 768px) 100vw, 33vw"
-                    />
+                    {product.images[0] ? (
+                      <Image
+                        src={product.images[0]}
+                        alt={product.name}
+                        fill
+                        className="object-contain p-4 group-hover:scale-105 transition-transform duration-500"
+                        sizes="(max-width: 768px) 100vw, 33vw"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-[#8B5E3C]">
+                        No image
+                      </div>
+                    )}
                   </div>
                   <div className="p-5 flex-1">
                     <h3 className="font-serif text-lg text-[#1A0E08] mb-1">{product.name}</h3>

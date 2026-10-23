@@ -10,6 +10,7 @@ import {
   parseWeightOptions,
   parseEquipmentOptions,
 } from "./productOptions";
+import { INSTANT_PREMIX_CATEGORY, parseInstantPremixOptions } from "./instantPremixOptions";
 
 function toProduct(row: typeof productsTable.$inferSelect): Product {
   const cat = getCategory(row.category);
@@ -28,6 +29,11 @@ function toProduct(row: typeof productsTable.$inferSelect): Product {
       ? storedEquipment
       : [...BREWING_EQUIPMENT_CATALOG]
     : [];
+  // Instant premix options.
+  const isInstantPremix = row.category === INSTANT_PREMIX_CATEGORY;
+  const instantPremixOptions = isInstantPremix && row.instantPremixOptions
+    ? parseInstantPremixOptions(row.instantPremixOptions)
+    : undefined;
   return {
     id: row.id,
     slug: row.slug,
@@ -53,6 +59,7 @@ function toProduct(row: typeof productsTable.$inferSelect): Product {
     blend: showBlend ? (row.blend ?? undefined) : undefined,
     weightOptions: weightOptions.length > 0 ? weightOptions : undefined,
     brewingEquipmentOptions: brewingEquipmentOptions.length > 0 ? brewingEquipmentOptions : undefined,
+    instantPremixOptions: instantPremixOptions && instantPremixOptions.variants.length > 0 ? instantPremixOptions : undefined,
   };
 }
 

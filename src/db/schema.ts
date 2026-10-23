@@ -104,6 +104,10 @@ export const products = sqliteTable("products", {
   // JSON array of selectable brewing-equipment option strings, e.g.
   // ["French Press","Pour Over","Espresso"]. Used for ground coffee.
   brewingEquipmentOptions: text("brewing_equipment_options").notNull().default("[]"),
+  // JSON object with product type and variant configs for instant premix.
+  // Structure: { "productType": "...", "variants": [...] }
+  // Note: Migration 003 made this NOT NULL with default '{}'.
+  instantPremixOptions: text("instant_premix_options").notNull().default("{}"),
   notes: text("notes").notNull().default("[]"),
   roast: text("roast"),
   blend: text("blend"),

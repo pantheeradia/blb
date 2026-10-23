@@ -6,13 +6,14 @@ import { eq, sql, inArray } from "drizzle-orm";
 import { esc } from "@/lib/htmlEscape";
 import { generateOrderNumber } from "@/lib/orderNumber";
 import { resolveLineOptions } from "@/lib/productOptions";
+import { INSTANT_PREMIX_CATEGORY, parseInstantPremixOptions } from "@/lib/instantPremixOptions";
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { customer, items, couponCode, attribution } = body as {
       customer: { name: string; email: string; phone?: string; address: string; city: string; state?: string; pincode: string };
-      items: Array<{ productId: number; quantity: number; selectedWeight?: string | null; selectedEquipment?: string | null }>;
+      items: Array<{ productId: number; quantity: number; selectedWeight?: string | null; selectedEquipment?: string | null; selectedVariant?: string | null }>;
       couponCode?: string | null;
       attribution?: { sourceType: string; utmSource: string | null; utmMedium: string | null; utmCampaign: string | null } | null;
     };
@@ -39,22 +40,44 @@ export async function POST(req: NextRequest) {
     for (const item of items) {
       const product = productMap.get(item.productId);
       if (!product) return NextResponse.json({ error: `Product not found: ${item.productId}` }, { status: 400 });
-      const resolved = resolveLineOptions(product, {
-        selectedWeight: item.selectedWeight,
-        selectedEquipment: item.selectedEquipment,
-      });
-      if ("error" in resolved) {
-        return NextResponse.json({ error: resolved.error }, { status: 400 });
+
+      let unitPrice = product.price;
+      let selectedWeight: string | null = null;
+      let brewingEquipment: string | null = null;
+
+      // Handle ground coffee options
+      if (product.category === "ground-coffee") {
+        const resolved = resolveLineOptions(product, {
+          selectedWeight: item.selectedWeight,
+          selectedEquipment: item.selectedEquipment,
+        });
+        if ("error" in resolved) {
+          return NextResponse.json({ error: resolved.error }, { status: 400 });
+        }
+        unitPrice = resolved.unitPrice;
+        selectedWeight = resolved.selectedWeight;
+        brewingEquipment = resolved.brewingEquipment;
       }
+      // Handle instant premix variants
+      else if (product.category === INSTANT_PREMIX_CATEGORY && item.selectedVariant) {
+        const instantPremix = parseInstantPremixOptions(product.instantPremixOptions);
+        const variant = instantPremix.variants.find((v) => v.name === item.selectedVariant);
+        if (!variant) {
+          return NextResponse.json({ error: `Invalid variant for product: ${product.name}` }, { status: 400 });
+        }
+        unitPrice = variant.sellingPrice;
+        selectedWeight = variant.weight || null;
+      }
+
       const qty = Math.max(1, Math.floor(item.quantity));
-      subtotal += resolved.unitPrice * qty;
+      subtotal += unitPrice * qty;
       lineItems.push({
         productId: product.id,
         productName: product.name,
-        price: resolved.unitPrice,
+        price: unitPrice,
         quantity: qty,
-        selectedWeight: resolved.selectedWeight,
-        brewingEquipment: resolved.brewingEquipment,
+        selectedWeight,
+        brewingEquipment,
       });
     }
 

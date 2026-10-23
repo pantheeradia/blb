@@ -91,6 +91,7 @@ CREATE TABLE IF NOT EXISTS products (
   weight TEXT,
   weight_options TEXT NOT NULL DEFAULT '[]',
   brewing_equipment_options TEXT NOT NULL DEFAULT '[]',
+  instant_premix_options TEXT NOT NULL DEFAULT '{}',
   notes TEXT NOT NULL DEFAULT '[]',
   roast TEXT,
   blend TEXT,

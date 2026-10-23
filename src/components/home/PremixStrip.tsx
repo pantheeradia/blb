@@ -31,13 +31,19 @@ export function PremixStrip({ products }: Props) {
             <div key={product.id} className="flex-none w-44 snap-start">
               <Link href={`/shop/${product.slug}`} className="group block">
                 <div className="relative h-44 bg-[#EAD9C8] overflow-hidden mb-3">
-                  <Image
-                    src={product.images[0]}
-                    alt={product.name}
-                    fill
-                    className="object-contain p-3 group-hover:scale-105 transition-transform duration-500"
-                    sizes="176px"
-                  />
+                  {product.images[0] ? (
+                    <Image
+                      src={product.images[0]}
+                      alt={product.name}
+                      fill
+                      className="object-contain p-3 group-hover:scale-105 transition-transform duration-500"
+                      sizes="176px"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-[#8B5E3C] text-xs">
+                      No image
+                    </div>
+                  )}
                   {product.regularPrice && (
                     <span className="absolute top-2 left-2 bg-[#C9953C] text-[#1A0E08] text-[9px] font-semibold uppercase tracking-wider px-2 py-0.5">
                       Sale
