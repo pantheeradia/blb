@@ -127,6 +127,8 @@ CREATE TABLE IF NOT EXISTS pending_orders (
   discount REAL NOT NULL DEFAULT 0,
   coupon_code TEXT,
   items_json TEXT NOT NULL,
+  customer_json TEXT,
+  attribution_json TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 

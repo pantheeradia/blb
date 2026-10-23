@@ -36,3 +36,4 @@ turso db shell <db-name> < scripts/migrations/001-add-product-visible.sql
 | --- | ------------------------------- | ---------------------------------------- |
 | 001 | `001-add-product-visible.sql`   | Add `visible` column to `products` (Show/Hide on site) |
 | 002 | `002-add-ground-coffee-options.sql` | Add `weight_options` + `brewing_equipment_options` to `products`, and `selected_weight` + `brewing_equipment` to `order_items` (ground coffee variant selection) |
+| 003 | `003-add-attribution-columns.sql` | Add `customer_json` and `attribution_json` columns to `pending_orders` (store customer delivery details and UTM attribution) |

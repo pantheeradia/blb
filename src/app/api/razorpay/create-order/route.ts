@@ -126,7 +126,33 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ id: order.id, amount: amountPaise });
   } catch (error) {
-    console.error("Razorpay create order error:", error);
+    // Safe diagnostics: log error type and message without exposing secrets
+    const isDevelopment = process.env.NODE_ENV === "development";
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorStack = error instanceof Error ? error.stack : undefined;
+
+    console.error("Razorpay create order error:", {
+      type: error instanceof Error ? error.constructor.name : typeof error,
+      message: errorMessage,
+      ...(isDevelopment && { stack: errorStack }),
+    });
+
+    // Check for common error types and provide user-friendly messages
+    if (errorMessage.includes("RAZORPAY_KEY_ID") || errorMessage.includes("RAZORPAY_KEY_SECRET")) {
+      console.error("Razorpay credentials not configured");
+      return NextResponse.json({ error: "Payment service not configured" }, { status: 500 });
+    }
+
+    if (errorMessage.includes("Failed query") || errorMessage.includes("SQLITE_ERROR")) {
+      console.error("Database error during order creation");
+      return NextResponse.json({ error: "Failed to save order data" }, { status: 500 });
+    }
+
+    if (errorMessage.includes("razorpay") || errorMessage.includes(" Razorpay")) {
+      console.error("Razorpay API error");
+      return NextResponse.json({ error: "Payment service error" }, { status: 500 });
+    }
+
     return NextResponse.json({ error: "Failed to create order" }, { status: 500 });
   }
 }
