@@ -9,6 +9,29 @@ import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
 import { eq, sql } from "drizzle-orm";
 import { products } from "../src/db/schema";
+import { readFileSync, existsSync } from "fs";
+import path from "path";
+
+// Load .env files
+function loadEnv(file: string) {
+  if (!existsSync(file)) return;
+  const content = readFileSync(file, "utf8");
+  for (const raw of content.split("\n")) {
+    const line = raw.trim();
+    if (!line || line.startsWith("#")) continue;
+    const eq = line.indexOf("=");
+    if (eq === -1) continue;
+    const key = line.slice(0, eq).trim();
+    let val = line.slice(eq + 1).trim();
+    if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+      val = val.slice(1, -1);
+    }
+    if (!(key in process.env)) process.env[key] = val;
+  }
+}
+
+loadEnv(path.join(process.cwd(), ".env"));
+loadEnv(path.join(process.cwd(), ".env.local"));
 
 interface SeedProduct {
   slug: string;
@@ -29,7 +52,10 @@ interface SeedProduct {
   options?: { productType: string; variants: Array<{ name: string; weight: string; sellingPrice: number; regularPrice: number }> };
 }
 
-const libsql = createClient({ url: process.env.TURSO_DATABASE_URL ?? "file:./local.db" });
+const libsql = createClient({
+  url: process.env.TURSO_DATABASE_URL ?? "file:./local.db",
+  authToken: process.env.TURSO_AUTH_TOKEN,
+});
 const db = drizzle(libsql, { schema: { products } });
 
 const seed: SeedProduct[] = [
