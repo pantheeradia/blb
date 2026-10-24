@@ -1,6 +1,7 @@
 "use client";
 
-import { useSearchParams, useState } from "next/navigation";
+import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { type Product } from "@/types";
 import { INSTANT_PREMIX_CATEGORY } from "@/lib/instantPremixOptions";
