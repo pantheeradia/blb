@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "npm run migrate && next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "migrate": "npx tsx scripts/apply-migration-003.ts"
   },
   "dependencies": {
     "@libsql/client": "^0.18.0",
