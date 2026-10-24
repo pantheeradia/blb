@@ -57,7 +57,7 @@ async function addColumn(table: string, column: string, ddl: string) {
 
 async function main() {
   console.log("Target DB:", process.env.TURSO_DATABASE_URL ?? "file:./local.db");
-  await addColumn("products", "instant_premix_options", "instant_premix_options TEXT NOT NULL DEFAULT '{}'");
+  await addColumn("products", "options", "options TEXT NOT NULL DEFAULT '{}'");
   console.log("✅ Migration 003 complete");
 }
 

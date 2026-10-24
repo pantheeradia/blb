@@ -27,6 +27,8 @@ turso db shell <db-name> < scripts/migrations/001-add-product-visible.sql
   ```
 
   Only run the ALTER if that returns no rows.
+- Data migrations (INSERT/UPDATE) should use idempotent patterns like
+  `INSERT OR REPLACE` to allow safe re-runs.
 - When adding a migration here, also update `scripts/turso-ddl.sql` so the full
   schema stays in sync for fresh databases.
 
@@ -36,5 +38,5 @@ turso db shell <db-name> < scripts/migrations/001-add-product-visible.sql
 | --- | ------------------------------- | ---------------------------------------- |
 | 001 | `001-add-product-visible.sql`   | Add `visible` column to `products` (Show/Hide on site) |
 | 002 | `002-add-ground-coffee-options.sql` | Add `weight_options` + `brewing_equipment_options` to `products`, and `selected_weight` + `brewing_equipment` to `order_items` (ground coffee variant selection) |
-| 003 | `003-add-instant-premix-options.sql` | Add `instant_premix_options` to `products` (instant premix product type and variant configs) |
-| 004 | `004-rename-instant-premix-options-to-options.sql` | Rename `instant_premix_options` to `options` in `products` (simplify column naming) |
+| 003 | `003-add-instant-premix-options.sql` | Add `options` to `products` (instant premix product type and variant configs) |
+| 005 | `005-seed-instant-premix-products.sql` | Seed 13 Instant Premix product variants (uses INSERT OR REPLACE for idempotency) |

@@ -1,7 +1,7 @@
 -- Migration 003: Instant Premix selectable options (Product Type + Variants)
 --
 -- Adds:
---   products.instant_premix_options JSON object with product type and variant configs
+--   products.options JSON object with product type and variant configs
 --
 -- This powers the admin-configurable Product Type cards and variant editors shown
 -- for instant-premix products. The structure is:
@@ -19,6 +19,6 @@
 -- Note: SQLite ALTER TABLE ADD COLUMN is not idempotent. If a column may already
 -- exist, check first and only run the ALTER if it returns nothing, e.g.:
 --   turso db shell <db-name> \
---     "SELECT name FROM pragma_table_info('products') WHERE name='instant_premix_options';"
+--     "SELECT name FROM pragma_table_info('products') WHERE name='options';"
 
-ALTER TABLE products ADD COLUMN instant_premix_options TEXT NOT NULL DEFAULT '{}';
+ALTER TABLE products ADD COLUMN options TEXT NOT NULL DEFAULT '{}';
