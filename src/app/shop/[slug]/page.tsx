@@ -1,10 +1,11 @@
 import { notFound } from "next/navigation";
-import { Suspense } from "react";
 import { Nav } from "@/components/layout/Nav";
 import { Footer } from "@/components/layout/Footer";
 import { CartDrawer } from "@/components/layout/CartDrawer";
-import { ProductDetail } from "@/components/shop/ProductDetail";
+import { ProductActions } from "@/components/shop/ProductActions";
+import { ProductImageGallery } from "@/components/shop/ProductImageGallery";
 import { getProductBySlug, getAllProducts } from "@/lib/products";
+import { formatPrice, formatPriceDisplay } from "@/lib/utils";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -36,9 +37,65 @@ export default async function ProductPage({ params }: Props) {
       <CartDrawer />
       <main className="min-h-screen bg-[#F7F0E6] pt-20">
         <div className="max-w-7xl mx-auto px-6 py-16">
-          <Suspense fallback={<div className="text-sm text-[#8B5E3C]">Loading...</div>}>
-            <ProductDetail product={product} />
-          </Suspense>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-start">
+            <ProductImageGallery images={product.images} productName={product.name} />
+
+            <div className="md:sticky md:top-28">
+              <p className="text-[10px] uppercase tracking-[0.2em] text-[#8B5E3C] mb-3">
+                {product.categoryLabel ?? product.category}
+                {product.weight ? ` · ${product.weight}` : ""}
+              </p>
+              <h1 className="font-serif text-2xl md:text-4xl text-[#1A0E08] mb-3">{product.name}</h1>
+              <div className="flex items-center gap-3 mb-6">
+                <span className="text-2xl font-medium text-[#1A0E08]">
+                  {formatPriceDisplay(product.price, product.weightOptions ?? [])}
+                </span>
+                {product.regularPrice && !(product.weightOptions && product.weightOptions.length > 0) && (
+                  <span className="text-base text-[#8B5E3C] line-through">{formatPrice(product.regularPrice)}</span>
+                )}
+              </div>
+
+              {(product.notes || product.roast || product.blend) && (
+                <div className="bg-[#EAD9C8] p-5 mb-6 space-y-2">
+                  {product.blend && (
+                    <div className="flex justify-between text-xs">
+                      <span className="text-[#8B5E3C] uppercase tracking-wider">Blend</span>
+                      <span className="text-[#1A0E08]">{product.blend}</span>
+                    </div>
+                  )}
+                  {product.roast && (
+                    <div className="flex justify-between text-xs">
+                      <span className="text-[#8B5E3C] uppercase tracking-wider">Roast</span>
+                      <span className="text-[#1A0E08]">{product.roast}</span>
+                    </div>
+                  )}
+                  {product.notes && (
+                    <div className="flex justify-between text-xs">
+                      <span className="text-[#8B5E3C] uppercase tracking-wider">Notes</span>
+                      <span className="text-[#1A0E08]">{product.notes.join(" & ")}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <ProductActions product={product} />
+
+              <div className="mt-8 pt-8 border-t border-[#D4C4B0]">
+                <h2 className="font-serif text-xl text-[#1A0E08] mb-3">About this product</h2>
+                <p className="text-sm text-[#4A2512] leading-relaxed">{product.description}</p>
+              </div>
+
+              {product.tags.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-6">
+                  {product.tags.map((tag) => (
+                    <span key={tag} className="text-[9px] uppercase tracking-wider px-2 py-1 bg-[#EAD9C8] text-[#4A2512]">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </main>
       <Footer />
