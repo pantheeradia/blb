@@ -1,35 +1,55 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { ShoppingBag, Minus, Plus } from "lucide-react";
 import { type Product } from "@/types";
 import { useCartStore } from "@/store/cart";
 import { formatPrice } from "@/lib/utils";
 import { GROUND_COFFEE_CATEGORY } from "@/lib/productOptions";
+import { INSTANT_PREMIX_CATEGORY } from "@/lib/instantPremixOptions";
 
 interface Props {
   product: Product;
+  initialVariant?: string;
 }
 
-export function ProductActions({ product }: Props) {
+export function ProductActions({ product, initialVariant }: Props) {
   const [qty, setQty] = useState(1);
   const { addItem } = useCartStore();
+  const searchParams = useSearchParams();
 
   const isGroundCoffee = product.category === GROUND_COFFEE_CATEGORY;
+  const isInstantPremix = product.category === INSTANT_PREMIX_CATEGORY;
   const weightOptions = isGroundCoffee ? product.weightOptions ?? [] : [];
   const equipmentOptions = isGroundCoffee ? product.brewingEquipmentOptions ?? [] : [];
+  const instantPremixVariants = isInstantPremix ? product.options?.variants ?? [] : [];
   const hasWeight = weightOptions.length > 0;
   const hasEquipment = equipmentOptions.length > 0;
+  const hasVariants = instantPremixVariants.length > 0;
 
   const [selectedWeight, setSelectedWeight] = useState("");
   const [selectedEquipment, setSelectedEquipment] = useState("");
+  const [selectedVariant, setSelectedVariant] = useState(initialVariant ?? "");
+
+  // Auto-select variant from URL param for instant premix
+  useEffect(() => {
+    if (isInstantPremix && hasVariants && !selectedVariant) {
+      const variantParam = searchParams.get("variant");
+      if (variantParam && instantPremixVariants.some((v) => v.name === variantParam)) {
+        setSelectedVariant(variantParam);
+      }
+    }
+  }, [isInstantPremix, hasVariants, instantPremixVariants, searchParams, selectedVariant]);
 
   const selectedWeightOption = weightOptions.find((w) => w.label === selectedWeight);
+  const selectedVariantOption = instantPremixVariants.find((v) => v.name === selectedVariant);
 
-  // Required-selection gating: when options exist, both must be chosen.
+  // Required-selection gating: when options exist, they must be chosen.
   const needsWeight = hasWeight && !selectedWeight;
   const needsEquipment = hasEquipment && !selectedEquipment;
-  const canAdd = !needsWeight && !needsEquipment;
+  const needsVariant = hasVariants && !selectedVariant;
+  const canAdd = !needsWeight && !needsEquipment && !needsVariant;
 
   function handleAdd() {
     if (!canAdd) return;
@@ -37,6 +57,8 @@ export function ProductActions({ product }: Props) {
       selectedWeight: hasWeight ? selectedWeight : undefined,
       selectedWeightPrice: selectedWeightOption?.price,
       selectedEquipment: hasEquipment ? selectedEquipment : undefined,
+      selectedVariant: hasVariants ? selectedVariant : undefined,
+      selectedVariantPrice: selectedVariantOption?.sellingPrice,
     });
   }
 
@@ -45,7 +67,7 @@ export function ProductActions({ product }: Props) {
 
   return (
     <div className="space-y-5">
-      {(hasWeight || hasEquipment) && (
+      {(hasWeight || hasEquipment || hasVariants) && (
         <div className="space-y-4">
           {hasWeight && (
             <div>
@@ -87,9 +109,40 @@ export function ProductActions({ product }: Props) {
             </div>
           )}
 
+          {hasVariants && (
+            <div>
+              <label className="block text-xs uppercase tracking-widest text-[#8B5E3C] mb-1.5">
+                Variant
+              </label>
+              <select
+                value={selectedVariant}
+                onChange={(e) => setSelectedVariant(e.target.value)}
+                className={selectCls}
+              >
+                <option value="">Choose an option</option>
+                {instantPremixVariants.map((v) => (
+                  <option key={v.name} value={v.name}>
+                    {v.name} {v.weight ? `(${v.weight})` : ""}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           {selectedWeightOption && (
             <p className="text-xl font-medium text-[#1A0E08]">
               {formatPrice(selectedWeightOption.price)}
+            </p>
+          )}
+
+          {selectedVariantOption && (
+            <p className="text-xl font-medium text-[#1A0E08]">
+              {formatPrice(selectedVariantOption.sellingPrice)}
+              {selectedVariantOption.regularPrice && (
+                <span className="text-base text-[#8B5E3C] line-through ml-2">
+                  {formatPrice(selectedVariantOption.regularPrice)}
+                </span>
+              )}
             </p>
           )}
         </div>
@@ -127,8 +180,10 @@ export function ProductActions({ product }: Props) {
       {!canAdd && (
         <p className="text-xs text-[#8B5E3C]">
           Please select {needsWeight ? "a weight" : ""}
-          {needsWeight && needsEquipment ? " and " : ""}
-          {needsEquipment ? "brewing equipment" : ""} to continue.
+          {needsWeight && (needsEquipment || needsVariant) ? " and " : ""}
+          {needsEquipment ? "brewing equipment" : ""}
+          {needsEquipment && needsVariant ? " and " : ""}
+          {needsVariant ? "a variant" : ""} to continue.
         </p>
       )}
     </div>

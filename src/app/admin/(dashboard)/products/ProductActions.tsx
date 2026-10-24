@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { CATEGORIES, getCategory } from "@/lib/categories";
 import { GROUND_COFFEE_CATEGORY, BREWING_EQUIPMENT_CATALOG, parseWeightOptions, parseEquipmentOptions, type WeightOption } from "@/lib/productOptions";
+import { INSTANT_PREMIX_CATEGORY, parseInstantPremixOptions, createInitialVariants, createEmptyVariant, type ProductType, type InstantPremixVariant } from "@/lib/instantPremixOptions";
+import { InstantPremixConfiguration } from "./InstantPremixConfiguration";
 
 interface DbProduct {
   id: number;
@@ -21,6 +23,7 @@ interface DbProduct {
   weight: string | null;
   weightOptions: string | null;
   brewingEquipmentOptions: string | null;
+  options: string | null | undefined;
   roast: string | null;
   blend: string | null;
   inStock: number | boolean;
@@ -51,6 +54,9 @@ interface ProductFormData {
   // form for easy editing; brewing equipment is a selected subset of the catalog.
   weightOptions: Array<{ label: string; price: string }>;
   brewingEquipmentOptions: string[];
+  // Instant premix options: product type and variants.
+  instantPremixProductType: ProductType | null;
+  instantPremixVariants: InstantPremixVariant[];
 }
 
 const EMPTY_FORM: ProductFormData = {
@@ -59,9 +65,12 @@ const EMPTY_FORM: ProductFormData = {
   notes: "", tags: "", inStock: true, featured: false, visible: true, images: [],
   // New products default to offering all brewing equipment.
   weightOptions: [], brewingEquipmentOptions: [...BREWING_EQUIPMENT_CATALOG],
+  // Instant premix defaults.
+  instantPremixProductType: null, instantPremixVariants: [],
 };
 
 function toForm(p: DbProduct): ProductFormData {
+  const instantPremix = parseInstantPremixOptions(p.options);
   return {
     name: p.name, slug: p.slug, category: p.category,
     price: String(p.price), regularPrice: p.regularPrice ? String(p.regularPrice) : "",
@@ -79,6 +88,8 @@ function toForm(p: DbProduct): ProductFormData {
       );
       return stored.length > 0 ? stored : [...BREWING_EQUIPMENT_CATALOG];
     })(),
+    instantPremixProductType: instantPremix.productType,
+    instantPremixVariants: instantPremix.variants,
   };
 }
 
@@ -187,11 +198,16 @@ function ProductModal({
   editId?: number;
 }) {
   const router = useRouter();
-  const [form, setForm] = useState<ProductFormData>(() => ({
-    ...initial,
-    // Default new products to the first available category.
-    category: initial.category || CATEGORIES[0]?.slug || "",
-  }));
+  const searchParams = useSearchParams();
+  const [form, setForm] = useState<ProductFormData>(() => {
+    // Check URL for category parameter on new products
+    const urlCategory = !editId ? searchParams.get("category") : null;
+    const category = urlCategory || initial.category || CATEGORIES[0]?.slug || "";
+    return {
+      ...initial,
+      category,
+    };
+  });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -206,6 +222,19 @@ function ProductModal({
   };
   // Selectable options are only configurable for ground coffee.
   const isGroundCoffee = form.category === GROUND_COFFEE_CATEGORY;
+  // Instant premix options are only configurable for instant premix category.
+  const isInstantPremix = form.category === INSTANT_PREMIX_CATEGORY;
+
+  // Reset instant premix data when category changes away from instant-premix
+  useEffect(() => {
+    if (!isInstantPremix && (form.instantPremixProductType !== null || form.instantPremixVariants.length > 0)) {
+      setForm((f) => ({
+        ...f,
+        instantPremixProductType: null,
+        instantPremixVariants: [],
+      }));
+    }
+  }, [isInstantPremix, form.instantPremixProductType, form.instantPremixVariants.length]);
 
   function addWeightRow() {
     setForm((f) => ({ ...f, weightOptions: [...f.weightOptions, { label: "", price: "" }] }));
@@ -229,6 +258,37 @@ function ProductModal({
   }
   function setAllEquipment(all: boolean) {
     setForm((f) => ({ ...f, brewingEquipmentOptions: all ? [...BREWING_EQUIPMENT_CATALOG] : [] }));
+  }
+
+  function setInstantPremixProductType(type: ProductType | null) {
+    setForm((f) => ({
+      ...f,
+      instantPremixProductType: type,
+      instantPremixVariants: type ? createInitialVariants(type) : [],
+    }));
+  }
+
+  function updateInstantPremixVariant(index: number, field: keyof InstantPremixVariant, value: string | number | null) {
+    setForm((f) => ({
+      ...f,
+      instantPremixVariants: f.instantPremixVariants.map((v, i) =>
+        i === index ? { ...v, [field]: value } : v
+      ),
+    }));
+  }
+
+  function addInstantPremixVariant() {
+    setForm((f) => ({
+      ...f,
+      instantPremixVariants: [...f.instantPremixVariants, createEmptyVariant()],
+    }));
+  }
+
+  function removeInstantPremixVariant(index: number) {
+    setForm((f) => ({
+      ...f,
+      instantPremixVariants: f.instantPremixVariants.filter((_, i) => i !== index),
+    }));
   }
 
   function set<K extends keyof ProductFormData>(field: K, value: ProductFormData[K]) {
@@ -261,6 +321,30 @@ function ProductModal({
       ? BREWING_EQUIPMENT_CATALOG.filter((e) => form.brewingEquipmentOptions.includes(e))
       : [];
 
+    // Validate instant premix options.
+    let options: Record<string, unknown> | null = null;
+    if (isInstantPremix) {
+      if (!form.instantPremixProductType) {
+        setError("Please select a product type for Instant Premix.");
+        return;
+      }
+      if (form.instantPremixVariants.length === 0) {
+        setError("Please add at least one variant for Instant Premix.");
+        return;
+      }
+      for (let i = 0; i < form.instantPremixVariants.length; i++) {
+        const v = form.instantPremixVariants[i];
+        if (!v.name || !Number.isFinite(v.sellingPrice) || v.sellingPrice < 0) {
+          setError(`Variant ${i + 1} needs a name and a valid selling price.`);
+          return;
+        }
+      }
+      options = {
+        productType: form.instantPremixProductType,
+        variants: form.instantPremixVariants,
+      };
+    }
+
     setSaving(true);
     setError("");
 
@@ -278,6 +362,7 @@ function ProductModal({
       ean: form.ean.trim() || null,
       weightOptions,
       brewingEquipmentOptions,
+      options,
     };
 
     const url = editId ? `/api/admin/products/${editId}` : "/api/admin/products";
@@ -288,8 +373,19 @@ function ProductModal({
       router.refresh();
       onClose();
     } else {
-      const data = await res.json();
-      setError(data.error ?? "Failed to save.");
+      let errorMessage = "Failed to save.";
+      try {
+        const text = await res.text();
+        if (text) {
+          const data = JSON.parse(text);
+          errorMessage = data.error ?? errorMessage;
+        } else {
+          errorMessage = `Server error (${res.status}): ${res.statusText}`;
+        }
+      } catch {
+        errorMessage = `Server error (${res.status}): ${res.statusText}`;
+      }
+      setError(errorMessage);
     }
     setSaving(false);
   }
@@ -477,6 +573,17 @@ function ProductModal({
             </div>
           )}
 
+          {isInstantPremix && (
+            <InstantPremixConfiguration
+              productType={form.instantPremixProductType}
+              variants={form.instantPremixVariants}
+              onProductTypeChange={setInstantPremixProductType}
+              onVariantChange={updateInstantPremixVariant}
+              onAddVariant={addInstantPremixVariant}
+              onRemoveVariant={removeInstantPremixVariant}
+            />
+          )}
+
           <div className="flex gap-6">
             <label className="flex items-center gap-2 cursor-pointer">
               <input type="checkbox" checked={form.inStock} onChange={(e) => set("inStock", e.target.checked)} className="w-4 h-4 rounded accent-amber-500" />
@@ -595,12 +702,21 @@ export function ToggleVisibilityButton({ id, visible }: { id: number; visible: b
 
 export function AddProductButton() {
   const [open, setOpen] = useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const categoryParam = searchParams.get("category");
+
+  // If URL has category parameter, pre-fill it in the form
+  const initialWithCategory = categoryParam
+    ? { ...EMPTY_FORM, category: categoryParam }
+    : EMPTY_FORM;
+
   return (
     <>
       <button onClick={() => setOpen(true)} className="bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold uppercase tracking-wider px-4 py-2 rounded transition-colors">
         + Add Product
       </button>
-      {open && <ProductModal initial={EMPTY_FORM} onClose={() => setOpen(false)} />}
+      {open && <ProductModal initial={initialWithCategory} onClose={() => { setOpen(false); router.refresh(); }} />}
     </>
   );
 }

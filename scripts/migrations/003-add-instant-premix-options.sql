@@ -1,0 +1,24 @@
+-- Migration 003: Instant Premix selectable options (Product Type + Variants)
+--
+-- Adds:
+--   products.options JSON object with product type and variant configs
+--
+-- This powers the admin-configurable Product Type cards and variant editors shown
+-- for instant-premix products. The structure is:
+-- {
+--   "productType": "non-milk-tea|green-tea|milk-tea|matcha-tea|malt-protein",
+--   "variants": [
+--     { "name": "...", "weight": "...", "sellingPrice": ..., "regularPrice": ... },
+--     ...
+--   ]
+-- }
+--
+-- Run directly on Turso:
+--   turso db shell <db-name> < scripts/migrations/003-add-instant-premix-options.sql
+--
+-- Note: SQLite ALTER TABLE ADD COLUMN is not idempotent. If a column may already
+-- exist, check first and only run the ALTER if it returns nothing, e.g.:
+--   turso db shell <db-name> \
+--     "SELECT name FROM pragma_table_info('products') WHERE name='options';"
+
+ALTER TABLE products ADD COLUMN options TEXT NOT NULL DEFAULT '{}';

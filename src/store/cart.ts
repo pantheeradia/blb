@@ -8,6 +8,8 @@ export interface AddItemOptions {
   selectedWeight?: string;
   selectedWeightPrice?: number;
   selectedEquipment?: string;
+  selectedVariant?: string;
+  selectedVariantPrice?: number;
 }
 
 interface CartStore {
@@ -25,15 +27,15 @@ interface CartStore {
 
 /**
  * Unique identity for a cart line. The same product with different selected
- * weight / brewing equipment are distinct lines, so the key combines all three.
+ * weight / brewing equipment / variant are distinct lines, so the key combines all.
  */
-export function lineKey(item: Pick<CartItem, "product" | "selectedWeight" | "selectedEquipment">): string {
-  return `${item.product.id}|${item.selectedWeight ?? ""}|${item.selectedEquipment ?? ""}`;
+export function lineKey(item: Pick<CartItem, "product" | "selectedWeight" | "selectedEquipment" | "selectedVariant">): string {
+  return `${item.product.id}|${item.selectedWeight ?? ""}|${item.selectedEquipment ?? ""}|${item.selectedVariant ?? ""}`;
 }
 
-/** Per-unit price for a line: the selected weight variant price if set, else base price. */
+/** Per-unit price for a line: the selected weight or variant price if set, else base price. */
 export function unitPrice(item: CartItem): number {
-  return item.selectedWeightPrice ?? item.product.price;
+  return item.selectedWeightPrice ?? item.selectedVariantPrice ?? item.product.price;
 }
 
 export const useCartStore = create<CartStore>()(
@@ -49,6 +51,8 @@ export const useCartStore = create<CartStore>()(
           selectedWeight: options.selectedWeight,
           selectedWeightPrice: options.selectedWeightPrice,
           selectedEquipment: options.selectedEquipment,
+          selectedVariant: options.selectedVariant,
+          selectedVariantPrice: options.selectedVariantPrice,
         };
         const key = lineKey(newItem);
         set((state) => {

@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { Nav } from "@/components/layout/Nav";
 import { Footer } from "@/components/layout/Footer";
 import { CartDrawer } from "@/components/layout/CartDrawer";
@@ -79,7 +80,9 @@ export default async function ProductPage({ params }: Props) {
                 </div>
               )}
 
-              <ProductActions product={product} />
+              <Suspense fallback={<div className="h-10" />}>
+                <ProductActions product={product} />
+              </Suspense>
 
               <div className="mt-8 pt-8 border-t border-[#D4C4B0]">
                 <h2 className="font-serif text-xl text-[#1A0E08] mb-3">About this product</h2>
