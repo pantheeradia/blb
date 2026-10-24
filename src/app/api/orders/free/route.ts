@@ -6,15 +6,26 @@ import { eq, sql, inArray } from "drizzle-orm";
 import { esc } from "@/lib/htmlEscape";
 import { generateOrderNumber } from "@/lib/orderNumber";
 import { resolveLineOptions } from "@/lib/productOptions";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 export async function POST(req: NextRequest) {
+  // Rate limit free order endpoint to prevent coupon enumeration and abuse
+  const ip = req.headers.get("x-forwarded-for") ?? req.headers.get("x-real-ip") ?? "unknown";
+  const rl = checkRateLimit(`free-order:${ip}`, 5, 60 * 60 * 1000); // 5 free orders per hour per IP
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Too many free order attempts. Please try again later." },
+      { status: 429, headers: { "Retry-After": String(Math.ceil(rl.retryAfterMs / 1000)) } }
+    );
+  }
+
   try {
     const body = await req.json();
     const { customer, items, couponCode, attribution } = body as {
       customer: { name: string; email: string; phone?: string; address: string; city: string; state?: string; pincode: string };
       items: Array<{ productId: number; quantity: number; selectedWeight?: string | null; selectedEquipment?: string | null }>;
       couponCode?: string | null;
-      attribution?: { sourceType: string; utmSource: string | null; utmMedium: string | null; utmCampaign: string | null } | null;
+      attribution?: { sourceType: string; utmSource: string | null; utmMedium: string | null; utmCampaign: string | null; capturedAt?: number } | null;
     };
 
     if (!Array.isArray(items) || items.length === 0) {
@@ -99,79 +110,86 @@ export async function POST(req: NextRequest) {
     const now = new Date().toISOString();
     const orderNumber = await generateOrderNumber();
 
-    await db.insert(orders).values({
-      id: orderId,
-      paymentId,
-      status: "pending",
-      orderNumber,
-      customerName: customer.name,
-      customerEmail: customer.email,
-      customerPhone: customer.phone ?? "",
-      address: customer.address,
-      city: customer.city,
-      state: customer.state ?? "",
-      pincode: customer.pincode,
-      total: 0,
-      discount,
-      couponCode: validatedCouponCode,
-      sourceType: attribution?.sourceType?.slice(0, 50) ?? null,
-      utmSource: attribution?.utmSource?.slice(0, 200) ?? null,
-      utmMedium: attribution?.utmMedium?.slice(0, 100) ?? null,
-      utmCampaign: attribution?.utmCampaign?.slice(0, 300) ?? null,
-    });
-
-    await db.insert(orderItems).values(
-      lineItems.map((i) => ({
-        orderId,
-        productId: i.productId,
-        productName: i.productName,
-        price: i.price,
-        quantity: i.quantity,
-        selectedWeight: i.selectedWeight,
-        brewingEquipment: i.brewingEquipment,
-      }))
-    );
-
-
-    const existing = await db
-      .select()
-      .from(customers)
-      .where(eq(customers.email, customer.email))
-      .limit(1);
-
-    if (existing.length > 0) {
-      await db
-        .update(customers)
-        .set({
-          orderCount: sql`${customers.orderCount} + 1`,
-          totalSpend: sql`${customers.totalSpend} + 0`,
+    // Use transaction to ensure atomicity
+    try {
+      await db.transaction(async (tx) => {
+        await tx.insert(orders).values({
+          id: orderId,
+          paymentId,
+          status: "pending",
+          orderNumber,
+          customerName: customer.name,
+          customerEmail: customer.email,
+          customerPhone: customer.phone ?? "",
           address: customer.address,
           city: customer.city,
           state: customer.state ?? "",
           pincode: customer.pincode,
-          lastOrderAt: now,
-        })
-        .where(eq(customers.email, customer.email));
-    } else {
-      await db.insert(customers).values({
-        name: customer.name,
-        email: customer.email,
-        phone: customer.phone ?? "",
-        address: customer.address,
-        city: customer.city,
-        state: customer.state ?? "",
-        pincode: customer.pincode,
-        orderCount: 1,
-        totalSpend: 0,
-        lastOrderAt: now,
-      });
-    }
+          total: 0,
+          discount,
+          couponCode: validatedCouponCode,
+          sourceType: attribution?.sourceType?.slice(0, 50) ?? null,
+          utmSource: attribution?.utmSource?.slice(0, 200) ?? null,
+          utmMedium: attribution?.utmMedium?.slice(0, 100) ?? null,
+          utmCampaign: attribution?.utmCampaign?.slice(0, 300) ?? null,
+        });
 
-    if (validatedCouponCode) {
-      await db
-        .update(coupons)
-        .set({ usesCount: sql`${coupons.usesCount} + 1` })
-        .where(eq(coupons.code, validatedCouponCode));
+        await tx.insert(orderItems).values(
+          lineItems.map((i) => ({
+            orderId,
+            productId: i.productId,
+            productName: i.productName,
+            price: i.price,
+            quantity: i.quantity,
+            selectedWeight: i.selectedWeight,
+            brewingEquipment: i.brewingEquipment,
+          }))
+        );
+
+        const existing = await tx
+          .select()
+          .from(customers)
+          .where(eq(customers.email, customer.email))
+          .limit(1);
+
+        if (existing.length > 0) {
+          await tx
+            .update(customers)
+            .set({
+              orderCount: sql`${customers.orderCount} + 1`,
+              totalSpend: sql`${customers.totalSpend} + 0`,
+              address: customer.address,
+              city: customer.city,
+              state: customer.state ?? "",
+              pincode: customer.pincode,
+              lastOrderAt: now,
+            })
+            .where(eq(customers.email, customer.email));
+        } else {
+          await tx.insert(customers).values({
+            name: customer.name,
+            email: customer.email,
+            phone: customer.phone ?? "",
+            address: customer.address,
+            city: customer.city,
+            state: customer.state ?? "",
+            pincode: customer.pincode,
+            orderCount: 1,
+            totalSpend: 0,
+            lastOrderAt: now,
+          });
+        }
+
+        if (validatedCouponCode) {
+          await tx
+            .update(coupons)
+            .set({ usesCount: sql`${coupons.usesCount} + 1` })
+            .where(eq(coupons.code, validatedCouponCode));
+        }
+      });
+    } catch (error) {
+      console.error("Transaction failed during free order creation:", error);
+      return NextResponse.json({ error: "Failed to place order" }, { status: 500 });
     }
 
     sendOrderConfirmation({ customer, lineItems, orderId, orderNumber, paymentId, discount })
