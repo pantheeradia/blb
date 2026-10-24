@@ -5,7 +5,8 @@ import { CartDrawer } from "@/components/layout/CartDrawer";
 import { ProductActions } from "@/components/shop/ProductActions";
 import { ProductImageGallery } from "@/components/shop/ProductImageGallery";
 import { getProductBySlug, getAllProducts } from "@/lib/products";
-import { formatPrice, formatPriceDisplay } from "@/lib/utils";
+import { formatPrice } from "@/lib/utils";
+import { formatPriceDisplay } from "@/lib/productOptions";
 
 interface Props {
   params: Promise<{ slug: string }>;
