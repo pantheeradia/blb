@@ -23,7 +23,7 @@ export function ProductActions({ product, initialVariant }: Props) {
   const isInstantPremix = product.category === INSTANT_PREMIX_CATEGORY;
   const weightOptions = isGroundCoffee ? product.weightOptions ?? [] : [];
   const equipmentOptions = isGroundCoffee ? product.brewingEquipmentOptions ?? [] : [];
-  const instantPremixVariants = isInstantPremix ? product.instantPremixOptions?.variants ?? [] : [];
+  const instantPremixVariants = isInstantPremix ? product.options?.variants ?? [] : [];
   const hasWeight = weightOptions.length > 0;
   const hasEquipment = equipmentOptions.length > 0;
   const hasVariants = instantPremixVariants.length > 0;

@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { name, slug, category, price, regularPrice, shortDescription, description,
             weight, roast, blend, ean, notes, tags, images, inStock, featured, visible,
-            weightOptions, brewingEquipmentOptions, instantPremixOptions } = body;
+            weightOptions, brewingEquipmentOptions, options } = body;
 
     if (!name || !slug || !category || !price) {
       return NextResponse.json({ error: "name, slug, category, price are required" }, { status: 400 });
@@ -59,12 +59,12 @@ export async function POST(req: NextRequest) {
       ean: ean ?? null,
       weightOptions: JSON.stringify(Array.isArray(weightOptions) ? weightOptions : []),
       brewingEquipmentOptions: JSON.stringify(Array.isArray(brewingEquipmentOptions) ? brewingEquipmentOptions : []),
-      instantPremixOptions: "{}",
+      options: "{}",
     };
 
-    // Override instantPremixOptions if category is instant-premix
+    // Override options if category is instant-premix
     if (category === "instant-premix") {
-      insertValues.instantPremixOptions = instantPremixOptions ? JSON.stringify(instantPremixOptions) : "{}";
+      insertValues.options = options ? JSON.stringify(options) : "{}";
     }
 
     const [row] = await db.insert(products).values(insertValues).returning();

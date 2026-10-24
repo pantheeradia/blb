@@ -31,8 +31,8 @@ function toProduct(row: typeof productsTable.$inferSelect): Product {
     : [];
   // Instant premix options.
   const isInstantPremix = row.category === INSTANT_PREMIX_CATEGORY;
-  const instantPremixOptions = isInstantPremix && row.instantPremixOptions
-    ? parseInstantPremixOptions(row.instantPremixOptions)
+  const options = isInstantPremix && row.options
+    ? parseInstantPremixOptions(row.options)
     : undefined;
   return {
     id: row.id,
@@ -59,7 +59,7 @@ function toProduct(row: typeof productsTable.$inferSelect): Product {
     blend: showBlend ? (row.blend ?? undefined) : undefined,
     weightOptions: weightOptions.length > 0 ? weightOptions : undefined,
     brewingEquipmentOptions: brewingEquipmentOptions.length > 0 ? brewingEquipmentOptions : undefined,
-    instantPremixOptions: instantPremixOptions && instantPremixOptions.variants.length > 0 ? instantPremixOptions : undefined,
+    options: options && options.variants.length > 0 ? options : undefined,
   };
 }
 

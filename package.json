@@ -7,7 +7,7 @@
     "build": "npm run migrate && next build",
     "start": "next start",
     "lint": "eslint",
-    "migrate": "npx tsx scripts/apply-migration-003.ts"
+    "migrate": "npx tsx scripts/apply-migration-004.ts"
   },
   "dependencies": {
     "@libsql/client": "^0.18.0",

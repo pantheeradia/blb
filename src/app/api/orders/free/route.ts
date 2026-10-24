@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
       }
       // Handle instant premix variants
       else if (product.category === INSTANT_PREMIX_CATEGORY && item.selectedVariant) {
-        const instantPremix = parseInstantPremixOptions(product.instantPremixOptions);
+        const instantPremix = parseInstantPremixOptions(product.options);
         const variant = instantPremix.variants.find((v) => v.name === item.selectedVariant);
         if (!variant) {
           return NextResponse.json({ error: `Invalid variant for product: ${product.name}` }, { status: 400 });

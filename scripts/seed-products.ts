@@ -2,17 +2,38 @@
  * One-time seed: static products.ts → SQLite products table
  * Run: npx tsx scripts/seed-products.ts
  * Safe to re-run - skips products that already exist (by slug).
+ * Updates options field for existing instant-premix products if needed.
  */
 
 import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { products } from "../src/db/schema";
+
+interface SeedProduct {
+  slug: string;
+  name: string;
+  category: string;
+  shortDescription: string;
+  description: string;
+  price: number;
+  regularPrice: number | null;
+  weight: string | null;
+  images: string[];
+  tags: string[];
+  notes: string[];
+  roast: string | null;
+  blend: string | null;
+  inStock: boolean;
+  featured: boolean;
+  options?: { productType: string; variants: Array<{ name: string; weight: string; sellingPrice: number; regularPrice: number }> };
+}
 
 const libsql = createClient({ url: process.env.TURSO_DATABASE_URL ?? "file:./local.db" });
 const db = drizzle(libsql, { schema: { products } });
 
-const seed = [
+const seed: SeedProduct[] = [
+  // Ground Coffee (keep existing)
   {
     slug: "house-brew", name: "House Brew", category: "ground-coffee" as const,
     shortDescription: "South Indian filter blend with Caramel & Chocolate notes",
@@ -63,6 +84,7 @@ const seed = [
     notes: ["Caramel", "Chocolate"], roast: "Medium-Dark", blend: "Coffee & Chicory",
     inStock: true, featured: false,
   },
+  // Whole Bean (keep existing)
   {
     slug: "whole-bean-morning-buzz", name: "Whole Bean Morning Buzz", category: "whole-bean" as const,
     shortDescription: "Whole bean Arabica & Robusta — grind fresh every morning",
@@ -93,16 +115,11 @@ const seed = [
     notes: ["Sweet", "Citrus"], roast: "Medium", blend: "100% Pure Coffee",
     inStock: true, featured: false,
   },
-  {
-    slug: "black-tea-strawberry", name: "Black Tea Premix - Strawberry", category: "instant-premix" as const,
-    shortDescription: "Fruit-infused black tea instant premix with natural strawberry",
-    description: "Discover the uniquely crafted Black Tea Instant Fruit Infused Premix - Strawberry at Bean Leaf Brew. Sweetened with natural fruit sugar, low in glycemic index, and has no added preservatives, colours, or flavours.",
-    price: 378, regularPrice: 440, weight: "10 sachets",
-    images: ["/images/a32a5f_aef75315585a449495de509a3a23ff11mv2.webp", "/images/DSC5462.webp"],
-    tags: ["instant", "tea", "strawberry", "antioxidants", "low gi"],
-    notes: [], roast: null, blend: null,
-    inStock: true, featured: false,
-  },
+  // ============================================================================
+  // INSTANT PREMIX - 13 REQUIRED VARIANTS
+  // ============================================================================
+  
+  // Non Milk Tea - Black Tea (4 variants)
   {
     slug: "black-tea-lemon", name: "Black Tea Premix - Classic Lemon", category: "instant-premix" as const,
     shortDescription: "Fruit-infused black tea with natural lemon — refreshing & healthy",
@@ -112,57 +129,72 @@ const seed = [
     tags: ["instant", "tea", "lemon", "vitamin c", "antioxidants"],
     notes: [], roast: null, blend: null,
     inStock: true, featured: false,
+    options: { productType: "non-milk-tea-black-tea", variants: [{ name: "Black Tea Premix - Classic Lemon", weight: "10 sachets", sellingPrice: 378, regularPrice: 440 }] },
   },
   {
-    slug: "black-coffee-cranberry-vanilla", name: "Black Coffee Premix - Cranberry Vanilla", category: "instant-premix" as const,
-    shortDescription: "Coffee infused with cranberry & natural vanilla extract",
-    description: "Discover the uniquely crafted Black Coffee Fruit Infused Instant Premix Cranberry - Vanilla at Bean Leaf Brew. Sweetened with natural fruit sugar and low in glycemic index.",
-    price: 468, regularPrice: 540, weight: "10 sachets",
-    images: ["/images/a32a5f_c64640210bee44db8ad9b0e68aad4c5fmv2.webp", "/images/DSC5468.webp"],
-    tags: ["instant", "coffee", "cranberry", "vanilla", "antioxidants"],
+    slug: "black-tea-peach-lemon", name: "Instant Black Tea Peach Lemon", category: "instant-premix" as const,
+    shortDescription: "Black tea with peach and lemon — refreshing fruit infusion",
+    description: "Instant Black Tea Peach Lemon is a fruit-infused black tea instant premix. Sweetened with natural fruit sugar, low in glycemic index, with no added preservatives, colours, or flavours. Rich in antioxidants and Vitamin C.",
+    price: 9999, regularPrice: 9999, weight: "10 x 20g packs",
+    images: [], tags: ["instant", "tea", "peach", "lemon", "antioxidants", "vitamin c", "low gi"],
     notes: [], roast: null, blend: null,
     inStock: true, featured: false,
+    options: { productType: "non-milk-tea-black-tea", variants: [{ name: "Instant Black Tea Peach Lemon", weight: "10 x 20g packs", sellingPrice: 9999, regularPrice: 9999 }] },
   },
   {
-    slug: "black-coffee-watermelon", name: "Black Coffee Premix - Watermelon", category: "instant-premix" as const,
-    shortDescription: "Coffee meets watermelon in this unique fruit-infused premix",
-    description: "Discover the uniquely crafted Black Coffee Fruit Infused Instant Premix - Watermelon at Bean Leaf Brew. Sweetened with natural fruit sugar, maintaining a low glycemic index.",
-    price: 414, regularPrice: 480, weight: "10 sachets",
-    images: ["/images/a32a5f_4376164d5f884049bb18df35e193e44dmv2.webp", "/images/DSC5471.webp"],
-    tags: ["instant", "coffee", "watermelon", "lycopene", "antioxidants"],
+    slug: "black-tea-blueberry", name: "Instant Black Tea Blueberry", category: "instant-premix" as const,
+    shortDescription: "Black tea with blueberry — antioxidant-rich fruit infusion",
+    description: "Instant Black Tea Blueberry is a fruit-infused black tea instant premix. Sweetened with natural fruit sugar, low in glycemic index, with no added preservatives, colours, or flavours. Rich in antioxidants.",
+    price: 9999, regularPrice: 9999, weight: "10 x 20g packs",
+    images: [], tags: ["instant", "tea", "blueberry", "antioxidants", "low gi"],
     notes: [], roast: null, blend: null,
     inStock: true, featured: false,
+    options: { productType: "non-milk-tea-black-tea", variants: [{ name: "Instant Black Tea Blueberry", weight: "10 x 20g packs", sellingPrice: 9999, regularPrice: 9999 }] },
   },
   {
-    slug: "green-tea-orange-lemon", name: "Green Tea Premix - Orange Lemon", category: "instant-premix" as const,
-    shortDescription: "Green tea with orange & lemon — antioxidants and vitamin C",
-    description: "Experience the exceptional blend of Green Tea Fruit Infused Instant Premix Orange - Lemon, uniquely crafted for a deliciously refreshing taste. No added preservatives, colours, or flavours.",
-    price: 378, regularPrice: 440, weight: "10 sachets",
-    images: ["/images/a32a5f_b044ea54a12746189030217dd00b5a01mv2.webp", "/images/DSC5448.webp"],
-    tags: ["instant", "green tea", "orange", "lemon", "catechins"],
+    slug: "black-tea-masala", name: "Instant Black Tea Masala", category: "instant-premix" as const,
+    shortDescription: "Spiced black tea premix with traditional masala blend",
+    description: "Instant Black Tea Masala is a spiced black tea instant premix with traditional Indian masala spices. Easy to prepare whether at home, in the office, or on the go.",
+    price: 9999, regularPrice: 9999, weight: "10 x 20g packs",
+    images: [], tags: ["instant", "tea", "masala", "spiced", "traditional"],
     notes: [], roast: null, blend: null,
     inStock: true, featured: false,
+    options: { productType: "non-milk-tea-black-tea", variants: [{ name: "Instant Black Tea Masala", weight: "10 x 20g packs", sellingPrice: 9999, regularPrice: 9999 }] },
+  },
+  
+  // Non Milk Tea - Green Tea (3 variants)
+  {
+    slug: "green-tea-masala", name: "Instant Green Tea Masala", category: "instant-premix" as const,
+    shortDescription: "Spiced green tea premix with traditional masala blend",
+    description: "Instant Green Tea Masala is a spiced green tea instant premix with traditional Indian masala spices. Rich in catechins and antioxidants. Easy to prepare whether at home, in the office, or on the go.",
+    price: 9999, regularPrice: 9999, weight: "10 x 20g packs",
+    images: [], tags: ["instant", "green tea", "masala", "spiced", "catechins", "antioxidants"],
+    notes: [], roast: null, blend: null,
+    inStock: true, featured: false,
+    options: { productType: "non-milk-tea-green-tea", variants: [{ name: "Instant Green Tea Masala", weight: "10 x 20g packs", sellingPrice: 9999, regularPrice: 9999 }] },
   },
   {
-    slug: "green-tea-pineapple", name: "Green Tea Premix - Pineapple", category: "instant-premix" as const,
-    shortDescription: "Green tea with pineapple — bromelain & Vitamin C boost",
-    description: "Experience the unique blend of Green Tea Fruit Infused Instant Premix Pineapple, exclusively at Bean Leaf Brew. Sweetened with natural fruit sugar, low in glycemic index.",
-    price: 378, regularPrice: 440, weight: "10 sachets",
-    images: ["/images/a32a5f_5f3446489bc845f499cd0904da7e03d8mv2.webp", "/images/DSC5458.webp"],
-    tags: ["instant", "green tea", "pineapple", "bromelain", "vitamin c"],
+    slug: "green-tea-cardamom", name: "Instant Green Tea Cardamom", category: "instant-premix" as const,
+    shortDescription: "Green tea with aromatic cardamom — refreshing and healthy",
+    description: "Instant Green Tea Cardamom is a green tea instant premix infused with aromatic cardamom. Rich in catechins and antioxidants. No added preservatives, colours, or flavours.",
+    price: 9999, regularPrice: 9999, weight: "10 x 20g packs",
+    images: [], tags: ["instant", "green tea", "cardamom", "catechins", "antioxidants"],
     notes: [], roast: null, blend: null,
     inStock: true, featured: false,
+    options: { productType: "non-milk-tea-green-tea", variants: [{ name: "Instant Green Tea Cardamom", weight: "10 x 20g packs", sellingPrice: 9999, regularPrice: 9999 }] },
   },
   {
-    slug: "matcha-latte", name: "Matcha Latte Classic 3-in-1", category: "instant-premix" as const,
-    shortDescription: "Classic matcha latte instant premix — rich, smooth & healthy",
-    description: "Experience the exquisite blend of taste and wellness with Matcha Latte Classic 3-in-1 instant premix at Bean Leaf Brew. Easy to prepare whether at home, in the office, or on the go.",
-    price: 378, regularPrice: 440, weight: "10 sachets",
-    images: ["/images/a32a5f_b6149460f45447a5b871bb1e66f622e0mv2.webp", "/images/DSC5466.webp"],
-    tags: ["instant", "matcha", "latte", "green tea", "catechins"],
+    slug: "green-tea-lemon", name: "Instant Green Tea Lemon", category: "instant-premix" as const,
+    shortDescription: "Green tea with lemon — antioxidants and Vitamin C boost",
+    description: "Instant Green Tea Lemon is a green tea instant premix with refreshing lemon. Rich in catechins, antioxidants, and Vitamin C. No added preservatives, colours, or flavours.",
+    price: 9999, regularPrice: 9999, weight: "10 x 20g packs",
+    images: [], tags: ["instant", "green tea", "lemon", "catechins", "antioxidants", "vitamin c"],
     notes: [], roast: null, blend: null,
     inStock: true, featured: false,
+    options: { productType: "non-milk-tea-green-tea", variants: [{ name: "Instant Green Tea Lemon", weight: "10 x 20g packs", sellingPrice: 9999, regularPrice: 9999 }] },
   },
+  
+  // Milk Tea (3 variants)
   {
     slug: "milk-tea-ginger", name: "Milk Tea 3-in-1 Ginger Infused", category: "instant-premix" as const,
     shortDescription: "Classic chai with natural ginger goodness",
@@ -172,17 +204,98 @@ const seed = [
     tags: ["instant", "milk tea", "ginger", "chai", "traditional"],
     notes: [], roast: null, blend: null,
     inStock: true, featured: false,
+    options: { productType: "milk-tea", variants: [{ name: "Milk Tea 3-in-1 Ginger Infused", weight: "10 sachets", sellingPrice: 324, regularPrice: 390 }] },
+  },
+  {
+    slug: "milk-tea-masala", name: "Instant Premix Milk Tea Masala", category: "instant-premix" as const,
+    shortDescription: "Classic milk tea with traditional masala spices",
+    description: "Instant Premix Milk Tea Masala is a classic milk tea instant premix infused with traditional Indian masala spices. Easy to prepare whether at home, in the office, or on the go.",
+    price: 9999, regularPrice: 9999, weight: "10 x 20g packs",
+    images: [], tags: ["instant", "milk tea", "masala", "spiced", "chai", "traditional"],
+    notes: [], roast: null, blend: null,
+    inStock: true, featured: false,
+    options: { productType: "milk-tea", variants: [{ name: "Instant Premix MILK TEA MASALA", weight: "10 x 20g packs", sellingPrice: 9999, regularPrice: 9999 }] },
+  },
+  {
+    slug: "milk-tea-cardamom", name: "Instant Premix Milk Tea Cardamom", category: "instant-premix" as const,
+    shortDescription: "Classic milk tea with aromatic cardamom",
+    description: "Instant Premix Milk Tea Cardamom is a classic milk tea instant premix infused with aromatic cardamom. Easy to prepare whether at home, in the office, or on the go.",
+    price: 9999, regularPrice: 9999, weight: "10 x 20g packs",
+    images: [], tags: ["instant", "milk tea", "cardamom", "chai", "traditional"],
+    notes: [], roast: null, blend: null,
+    inStock: true, featured: false,
+    options: { productType: "milk-tea", variants: [{ name: "Instant Premix MILK TEA CARDAMOM", weight: "10 x 20g packs", sellingPrice: 9999, regularPrice: 9999 }] },
+  },
+  
+  // Matcha Tea (1 variant)
+  {
+    slug: "matcha-latte", name: "Matcha Latte Classic 3-in-1", category: "instant-premix" as const,
+    shortDescription: "Classic matcha latte instant premix — rich, smooth & healthy",
+    description: "Experience the exquisite blend of taste and wellness with Matcha Latte Classic 3-in-1 instant premix at Bean Leaf Brew. Easy to prepare whether at home, in the office, or on the go.",
+    price: 378, regularPrice: 440, weight: "10 sachets",
+    images: ["/images/a32a5f_b6149460f45447a5b871bb1e66f622e0mv2.webp", "/images/DSC5466.webp"],
+    tags: ["instant", "matcha", "latte", "green tea", "catechins"],
+    notes: [], roast: null, blend: null,
+    inStock: true, featured: false,
+    options: { productType: "matcha-tea", variants: [{ name: "Matcha Latte Classic 3-in-1", weight: "10 sachets", sellingPrice: 378, regularPrice: 440 }] },
+  },
+  
+  // Malt Protein (2 variants)
+  {
+    slug: "malt-protein-choco-hazelnut", name: "Instant Premix Malt Choco-Hazelnut", category: "instant-premix" as const,
+    shortDescription: "Protein-rich malt with real cocoa and hazelnuts — 15g protein per serve",
+    description: "Instant Premix Malt Choco-Hazelnut is a protein-rich malt premix with real cocoa and hazelnuts. Contains 15g protein per serving (30% of RDA), non-caloric natural sweetener Allulose, supports sustained release of amino acids, and is a source of fiber. Allergens: Contains Milk, Gluten, Nuts.",
+    price: 9999, regularPrice: 9999, weight: "5 x 40g packs",
+    images: [], tags: ["instant", "malt", "protein", "chocolate", "hazelnut", "high protein"],
+    notes: [], roast: null, blend: null,
+    inStock: true, featured: false,
+    options: { productType: "malt-protein", variants: [{ name: "Instant Premix MALT-CHOCO-HAZELNUT", weight: "5 x 40g packs", sellingPrice: 9999, regularPrice: 9999 }] },
+  },
+  {
+    slug: "malt-protein-kesar-badam", name: "Instant Premix Malt Kesar Badam", category: "instant-premix" as const,
+    shortDescription: "Protein-rich malt with saffron and almonds — 15g protein per serve",
+    description: "Instant Premix Malt Kesar Badam is a protein-rich malt premix with saffron (kesar) and almonds. Contains 15g protein per serving (30% of RDA), non-caloric natural sweetener Allulose, supports sustained release of amino acids, and is a source of fiber. Allergens: Contains Milk, Gluten, Nuts.",
+    price: 9999, regularPrice: 9999, weight: "5 x 40g packs",
+    images: [], tags: ["instant", "malt", "protein", "kesar", "badam", "almond", "high protein"],
+    notes: [], roast: null, blend: null,
+    inStock: true, featured: false,
+    options: { productType: "malt-protein", variants: [{ name: "Instant Premix MALT KESAR BADAM", weight: "5 x 40g packs", sellingPrice: 9999, regularPrice: 9999 }] },
   },
 ];
 
 async function main() {
   let inserted = 0;
   let skipped = 0;
+  let updated = 0;
 
   for (const p of seed) {
-    const existing = await db.select({ id: products.id }).from(products).where(eq(products.slug, p.slug)).limit(1);
-    if (existing.length > 0) { skipped++; continue; }
+    const existing = await db.select().from(products).where(eq(products.slug, p.slug)).limit(1);
+    
+    if (existing.length > 0) {
+      const existingProduct = existing[0];
+      
+      // If product exists and has options in seed, update the options field
+      if (p.options) {
+        const existingOptions = existingProduct.options as string;
+        const newOptions = JSON.stringify(p.options);
+        
+        // Only update if options are different
+        if (existingOptions !== newOptions) {
+          await db.update(products)
+            .set({ options: newOptions, updatedAt: sql`(datetime('now'))` })
+            .where(eq(products.slug, p.slug));
+          updated++;
+          console.log(`Updated options for: ${p.slug}`);
+        } else {
+          skipped++;
+        }
+      } else {
+        skipped++;
+      }
+      continue;
+    }
 
+    // Insert new product
     await db.insert(products).values({
       slug: p.slug,
       name: p.name,
@@ -199,11 +312,12 @@ async function main() {
       blend: p.blend ?? null,
       inStock: p.inStock,
       featured: p.featured,
+      options: p.options ? JSON.stringify(p.options) : "{}",
     });
     inserted++;
   }
 
-  console.log(`Done! Inserted: ${inserted}, Skipped: ${skipped}`);
+  console.log(`Done! Inserted: ${inserted}, Updated: ${updated}, Skipped: ${skipped}`);
   libsql.close();
 }
 

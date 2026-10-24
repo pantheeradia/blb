@@ -57,7 +57,7 @@ export function CartDrawer() {
                 const weightLabel = selectedWeight ?? product.weight;
                 // Get variant details if selected
                 const variant = selectedVariant
-                  ? product.instantPremixOptions?.variants.find((v) => v.name === selectedVariant)
+                  ? product.options?.variants.find((v) => v.name === selectedVariant)
                   : null;
                 return (
                   <li key={key} className="flex gap-4">

@@ -14,7 +14,7 @@ interface Props {
 export function ProductDetail({ product }: Props) {
   const searchParams = useSearchParams();
   const isInstantPremix = product.category === INSTANT_PREMIX_CATEGORY;
-  const variants = isInstantPremix ? product.instantPremixOptions?.variants ?? [] : [];
+  const variants = isInstantPremix ? product.options?.variants ?? [] : [];
   const hasVariants = variants.length > 0;
 
   // Get variant from search params

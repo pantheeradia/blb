@@ -46,9 +46,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (body.weightOptions !== undefined) updates.weightOptions = JSON.stringify(Array.isArray(body.weightOptions) ? body.weightOptions : []);
     if (body.brewingEquipmentOptions !== undefined) updates.brewingEquipmentOptions = JSON.stringify(Array.isArray(body.brewingEquipmentOptions) ? body.brewingEquipmentOptions : []);
 
-    // Only update instantPremixOptions if category is instant-premix
-    if (body.category === "instant-premix" && body.instantPremixOptions !== undefined) {
-      updates.instantPremixOptions = body.instantPremixOptions ? JSON.stringify(body.instantPremixOptions) : "{}";
+    // Only update options if category is instant-premix
+    if (body.category === "instant-premix" && body.options !== undefined) {
+      updates.options = body.options ? JSON.stringify(body.options) : "{}";
     }
 
     const [row] = await db.update(products).set(updates).where(eq(products.id, Number(id))).returning();

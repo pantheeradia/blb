@@ -39,7 +39,7 @@ export function groupProducts(products: Product[]): ProductGroup[] {
   const groupsMap = new Map<string, ProductGroup>();
 
   instantPremixProducts.forEach((product) => {
-    const productType = product.instantPremixOptions?.productType;
+    const productType = product.options?.productType;
     if (!productType) return;
 
     // Determine group key and title
@@ -55,7 +55,7 @@ export function groupProducts(products: Product[]): ProductGroup[] {
     }
 
     // Extract variants from the product
-    const variants = product.instantPremixOptions?.variants ?? [];
+    const variants = product.options?.variants ?? [];
     
     if (!groupsMap.has(groupKey)) {
       groupsMap.set(groupKey, {

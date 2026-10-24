@@ -107,7 +107,7 @@ export const products = sqliteTable("products", {
   // JSON object with product type and variant configs for instant premix.
   // Structure: { "productType": "...", "variants": [...] }
   // Note: Migration 003 made this NOT NULL with default '{}'.
-  instantPremixOptions: text("instant_premix_options").notNull().default("{}"),
+  options: text("options").notNull().default("{}"),
   notes: text("notes").notNull().default("[]"),
   roast: text("roast"),
   blend: text("blend"),

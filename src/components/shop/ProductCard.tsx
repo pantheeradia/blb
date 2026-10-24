@@ -18,7 +18,7 @@ export function ProductCard({ product }: Props) {
 
   const weightOptions = product.weightOptions ?? [];
   const equipmentOptions = product.brewingEquipmentOptions ?? [];
-  const instantPremixVariants = product.instantPremixOptions?.variants ?? [];
+  const instantPremixVariants = product.options?.variants ?? [];
   // Ground coffee with configured options must be chosen on the product page,
   // so the card links there instead of adding directly.
   const needsSelection = requiresOptionSelection(product.category, weightOptions, equipmentOptions);

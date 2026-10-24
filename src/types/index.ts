@@ -45,7 +45,7 @@ export interface Product {
   weightOptions?: WeightOption[];
   brewingEquipmentOptions?: string[];
   // Admin-configured options for instant premix.
-  instantPremixOptions?: InstantPremixOptions;
+  options?: InstantPremixOptions;
 }
 
 export interface CartItem {

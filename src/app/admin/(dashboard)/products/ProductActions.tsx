@@ -23,7 +23,7 @@ interface DbProduct {
   weight: string | null;
   weightOptions: string | null;
   brewingEquipmentOptions: string | null;
-  instantPremixOptions: string | null | undefined;
+  options: string | null | undefined;
   roast: string | null;
   blend: string | null;
   inStock: number | boolean;
@@ -70,7 +70,7 @@ const EMPTY_FORM: ProductFormData = {
 };
 
 function toForm(p: DbProduct): ProductFormData {
-  const instantPremix = parseInstantPremixOptions(p.instantPremixOptions);
+  const instantPremix = parseInstantPremixOptions(p.options);
   return {
     name: p.name, slug: p.slug, category: p.category,
     price: String(p.price), regularPrice: p.regularPrice ? String(p.regularPrice) : "",
@@ -322,7 +322,7 @@ function ProductModal({
       : [];
 
     // Validate instant premix options.
-    let instantPremixOptions: Record<string, unknown> | null = null;
+    let options: Record<string, unknown> | null = null;
     if (isInstantPremix) {
       if (!form.instantPremixProductType) {
         setError("Please select a product type for Instant Premix.");
@@ -339,7 +339,7 @@ function ProductModal({
           return;
         }
       }
-      instantPremixOptions = {
+      options = {
         productType: form.instantPremixProductType,
         variants: form.instantPremixVariants,
       };
@@ -362,7 +362,7 @@ function ProductModal({
       ean: form.ean.trim() || null,
       weightOptions,
       brewingEquipmentOptions,
-      instantPremixOptions,
+      options,
     };
 
     const url = editId ? `/api/admin/products/${editId}` : "/api/admin/products";
