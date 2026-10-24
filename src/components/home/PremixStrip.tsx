@@ -15,7 +15,9 @@ function PremixCard({ product }: { product: Product }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
 
-  const hasMultipleImages = product.images.length > 1;
+  const hasValidImages = product.images.length > 0 && product.images[0] !== "";
+  const hasMultipleImages = hasValidImages && product.images.length > 1;
+  const currentImage = hasValidImages ? product.images[currentImageIndex] : null;
 
   const handlePrevImage = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -32,7 +34,7 @@ function PremixCard({ product }: { product: Product }) {
   return (
     <div className="flex-none w-44 snap-start">
       <Link href={`/shop/${product.slug}`} className="group block">
-        <div 
+        <div
           className="relative h-44 bg-[#EAD9C8] overflow-hidden mb-3"
           onMouseEnter={() => setIsHovering(true)}
           onMouseLeave={() => {
@@ -40,13 +42,19 @@ function PremixCard({ product }: { product: Product }) {
             setCurrentImageIndex(0);
           }}
         >
-          <Image
-            src={product.images[currentImageIndex]}
-            alt={product.name}
-            fill
-            className="object-contain p-3 group-hover:scale-105 transition-transform duration-500"
-            sizes="176px"
-          />
+          {currentImage ? (
+            <Image
+              src={currentImage}
+              alt={product.name}
+              fill
+              className="object-contain p-3 group-hover:scale-105 transition-transform duration-500"
+              sizes="176px"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-[#8B5E3C]">
+              No image
+            </div>
+          )}
 
           {/* Image Navigation Controls - Show on hover if multiple images */}
           {hasMultipleImages && isHovering && (
@@ -77,8 +85,8 @@ function PremixCard({ product }: { product: Product }) {
                       setCurrentImageIndex(index);
                     }}
                     className={`w-1 h-1 rounded-full transition-all ${
-                      index === currentImageIndex 
-                        ? "bg-white w-4" 
+                      index === currentImageIndex
+                        ? "bg-white w-4"
                         : "bg-white/60 hover:bg-white/80"
                     }`}
                     aria-label={`View image ${index + 1}`}

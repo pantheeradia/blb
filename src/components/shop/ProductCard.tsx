@@ -29,7 +29,9 @@ export function ProductCard({ product }: Props) {
   const hasVariants = product.category === INSTANT_PREMIX_CATEGORY && instantPremixVariants.length > 0;
   const needsVariantSelection = hasVariants;
 
-  const hasMultipleImages = product.images.length > 1;
+  const hasValidImages = product.images.length > 0 && product.images[0] !== "";
+  const hasMultipleImages = hasValidImages && product.images.length > 1;
+  const currentImage = hasValidImages ? product.images[currentImageIndex] : null;
 
   const handlePrevImage = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -46,7 +48,7 @@ export function ProductCard({ product }: Props) {
   return (
     <div className="group flex flex-col w-full bg-[#FAFAF8] border border-[#D4C4B0] overflow-hidden hover:shadow-md transition-shadow">
       <Link href={`/shop/${product.slug}`} className="flex flex-col flex-1">
-        <div 
+        <div
           className="relative h-56 bg-[#EAD9C8] overflow-hidden flex-shrink-0"
           onMouseEnter={() => setIsHovering(true)}
           onMouseLeave={() => {
@@ -54,9 +56,9 @@ export function ProductCard({ product }: Props) {
             setCurrentImageIndex(0);
           }}
         >
-          {product.images[0] ? (
+          {currentImage ? (
             <Image
-              src={product.images[currentImageIndex]}
+              src={currentImage}
               alt={product.name}
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-500"

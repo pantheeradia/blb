@@ -17,7 +17,9 @@ function FeaturedProductCard({ product }: { product: Product }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
 
-  const hasMultipleImages = product.images.length > 1;
+  const hasValidImages = product.images.length > 0 && product.images[0] !== "";
+  const hasMultipleImages = hasValidImages && product.images.length > 1;
+  const currentImage = hasValidImages ? product.images[currentImageIndex] : null;
 
   const handlePrevImage = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -34,7 +36,7 @@ function FeaturedProductCard({ product }: { product: Product }) {
   return (
     <div className="group bg-[#FAFAF8] border border-[#D4C4B0] overflow-hidden hover:shadow-md transition-shadow flex flex-col w-full">
       <Link href={`/shop/${product.slug}`} className="flex flex-col flex-1">
-        <div 
+        <div
           className="relative h-60 bg-[#EAD9C8] overflow-hidden flex-shrink-0"
           onMouseEnter={() => setIsHovering(true)}
           onMouseLeave={() => {
@@ -42,13 +44,19 @@ function FeaturedProductCard({ product }: { product: Product }) {
             setCurrentImageIndex(0);
           }}
         >
-          <Image
-            src={product.images[currentImageIndex]}
-            alt={product.name}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform duration-500"
-            sizes="(max-width: 768px) 100vw, 33vw"
-          />
+          {currentImage ? (
+            <Image
+              src={currentImage}
+              alt={product.name}
+              fill
+              className="object-cover group-hover:scale-105 transition-transform duration-500"
+              sizes="(max-width: 768px) 100vw, 33vw"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-[#8B5E3C]">
+              No image
+            </div>
+          )}
 
           {/* Image Navigation Controls - Show on hover if multiple images */}
           {hasMultipleImages && isHovering && (
