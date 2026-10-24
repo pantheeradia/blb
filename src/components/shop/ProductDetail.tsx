@@ -1,6 +1,6 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useState } from "next/navigation";
 import Image from "next/image";
 import { type Product } from "@/types";
 import { INSTANT_PREMIX_CATEGORY } from "@/lib/instantPremixOptions";
@@ -16,6 +16,7 @@ export function ProductDetail({ product }: Props) {
   const isInstantPremix = product.category === INSTANT_PREMIX_CATEGORY;
   const variants = isInstantPremix ? product.options?.variants ?? [] : [];
   const hasVariants = variants.length > 0;
+  const [imageError, setImageError] = useState(false);
 
   // Get variant from search params
   const variantParam = searchParams.get("variant");
@@ -56,7 +57,7 @@ export function ProductDetail({ product }: Props) {
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-start">
         <div className="relative aspect-square bg-[#EAD9C8] overflow-hidden">
-          {product.images[0] ? (
+          {product.images[0] && !imageError ? (
             <Image
               src={product.images[0]}
               alt={displayName}
@@ -64,10 +65,20 @@ export function ProductDetail({ product }: Props) {
               className="object-contain p-6"
               sizes="(max-width: 768px) 100vw, 50vw"
               priority
+              onError={() => setImageError(true)}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-[#8B5E3C]">
-              No image available
+              {product.images[0] ? (
+                <>
+                  <svg className="w-12 h-12 mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586 1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <p className="text-sm">Image not available</p>
+                </>
+              ) : (
+                <p className="text-sm">No image available</p>
+              )}
             </div>
           )}
         </div>

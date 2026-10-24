@@ -17,6 +17,7 @@ export function ProductGroupCard({ group }: Props) {
   const [selectedVariantIndex, setSelectedVariantIndex] = useState(0);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [imageError, setImageError] = useState(false);
 
   const selectedVariant = group.variants[selectedVariantIndex];
   const hasMultipleVariants = group.variants.length > 1;
@@ -40,6 +41,11 @@ export function ProductGroupCard({ group }: Props) {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isDropdownOpen]);
+
+  // Reset image error when variant changes
+  useEffect(() => {
+    setImageError(false);
+  }, [selectedVariantIndex]);
 
   const handleAddToCart = () => {
     // Create a product-like object for the cart
@@ -81,17 +87,27 @@ export function ProductGroupCard({ group }: Props) {
 
       {/* Image Section */}
       <Link href={`/shop/${selectedVariant.productSlug}?variant=${encodeURIComponent(selectedVariant.variantName)}`} className="relative h-[150px] bg-[#E6D5C8] overflow-hidden flex-shrink-0 block">
-        {selectedVariant.image ? (
+        {selectedVariant.image && !imageError ? (
           <Image
             src={selectedVariant.image}
             alt={selectedVariant.variantName}
             fill
             className="object-contain p-4"
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            onError={() => setImageError(true)}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-[#8B5E3C] text-xs">
-            No image
+            {selectedVariant.image ? (
+              <>
+                <svg className="w-6 h-6 mb-1 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586 1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <p className="text-[10px]">Image not available</p>
+              </>
+            ) : (
+              <p className="text-xs">No image</p>
+            )}
           </div>
         )}
         {isOnSale && (
