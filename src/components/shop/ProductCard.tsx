@@ -7,6 +7,7 @@ import { type Product } from "@/types";
 import { formatPrice } from "@/lib/utils";
 import { useCartStore } from "@/store/cart";
 import { formatPriceDisplay, requiresOptionSelection } from "@/lib/productOptions";
+import { INSTANT_PREMIX_CATEGORY } from "@/lib/instantPremixOptions";
 import { useState } from "react";
 
 interface Props {
@@ -17,31 +18,44 @@ export function ProductCard({ product }: Props) {
   const { addItem } = useCartStore();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   const weightOptions = product.weightOptions ?? [];
   const equipmentOptions = product.brewingEquipmentOptions ?? [];
+  const instantPremixVariants = product.options?.variants ?? [];
   // Ground coffee with configured options must be chosen on the product page,
   // so the card links there instead of adding directly.
   const needsSelection = requiresOptionSelection(product.category, weightOptions, equipmentOptions);
+  // Instant premix with variants must also be chosen on the product page.
+  const hasVariants = product.category === INSTANT_PREMIX_CATEGORY && instantPremixVariants.length > 0;
+  const needsVariantSelection = hasVariants;
 
-  const hasMultipleImages = product.images.length > 1;
+  const hasValidImages = product.images.length > 0 && product.images[0] !== "";
+  const hasMultipleImages = hasValidImages && product.images.length > 1;
+  const currentImage = hasValidImages ? product.images[currentImageIndex] : null;
 
   const handlePrevImage = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setCurrentImageIndex((prev) => (prev === 0 ? product.images.length - 1 : prev - 1));
+    setImageError(false);
   };
 
   const handleNextImage = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setCurrentImageIndex((prev) => (prev === product.images.length - 1 ? 0 : prev + 1));
+    setImageError(false);
+  };
+
+  const handleImageError = () => {
+    setImageError(true);
   };
 
   return (
     <div className="group flex flex-col w-full bg-[#FAFAF8] border border-[#D4C4B0] overflow-hidden hover:shadow-md transition-shadow">
       <Link href={`/shop/${product.slug}`} className="flex flex-col flex-1">
-        <div 
+        <div
           className="relative h-56 bg-[#EAD9C8] overflow-hidden flex-shrink-0"
           onMouseEnter={() => setIsHovering(true)}
           onMouseLeave={() => {
@@ -49,13 +63,29 @@ export function ProductCard({ product }: Props) {
             setCurrentImageIndex(0);
           }}
         >
-          <Image
-            src={product.images[currentImageIndex]}
-            alt={product.name}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform duration-500"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          />
+          {currentImage && !imageError ? (
+            <Image
+              src={currentImage}
+              alt={product.name}
+              fill
+              className="object-cover group-hover:scale-105 transition-transform duration-500"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              onError={handleImageError}
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-[#8B5E3C]">
+              {hasValidImages ? (
+                <>
+                  <svg className="w-8 h-8 mb-1 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586 1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <p className="text-xs">Image not available</p>
+                </>
+              ) : (
+                <p className="text-xs">No image</p>
+              )}
+            </div>
+          )}
           
           {/* Image Navigation Controls - Show on hover if multiple images */}
           {hasMultipleImages && isHovering && (
@@ -117,11 +147,11 @@ export function ProductCard({ product }: Props) {
       <div className="px-5 pb-5 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="font-medium text-[#1A0E08]">{formatPriceDisplay(product.price, weightOptions)}</span>
-          {product.regularPrice && weightOptions.length === 0 && (
+          {product.regularPrice && weightOptions.length === 0 && !hasVariants && (
             <span className="text-xs text-[#8B5E3C] line-through">{formatPrice(product.regularPrice)}</span>
           )}
         </div>
-        {needsSelection ? (
+        {needsSelection || needsVariantSelection ? (
           <Link
             href={`/shop/${product.slug}`}
             className="flex items-center gap-2 bg-[#1A0E08] text-[#F7F0E6] text-[10px] uppercase tracking-widest px-4 py-2 hover:bg-[#4A2512] transition-colors"
