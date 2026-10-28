@@ -9,6 +9,7 @@
   --gold: #C9953C;
   --white: #FAFAF8;
   --border-brown: #D4C4B0;
+  --ease-gentle: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @theme inline {
@@ -33,10 +34,45 @@ html {
 }
 
 body {
-  background: var(--cream);
+  background: #f7f0e6;
   color: var(--espresso);
   font-family: var(--font-inter), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body::before {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+  content: "";
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.6'/%3E%3C/svg%3E");
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+  transition-timing-function: var(--ease-gentle);
+}
+
+[data-gentle-motion] :where(img, span, svg) {
+  transition-timing-function: var(--ease-gentle);
+}
+
+button:not(:disabled) {
+  cursor: pointer;
 }
 
 ::selection {
@@ -53,9 +89,63 @@ body {
   }
 }
 
+@keyframes hero-copy-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes hero-media-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0) scale(0.992);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes soft-rise {
+  from {
+    opacity: 0.2;
+    transform: translate3d(0, 20px, 0) scale(0.995);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+.hero-copy-enter {
+  animation: hero-copy-in 900ms var(--ease-gentle) both;
+}
+
+.hero-media-enter {
+  animation: hero-media-in 1200ms 80ms var(--ease-gentle) both;
+}
+
+@supports (animation-timeline: view()) {
+  .reveal-on-scroll {
+    animation: soft-rise both;
+    animation-timeline: view();
+    animation-range: entry 8% cover 28%;
+    animation-timing-function: var(--ease-gentle);
+  }
+
+  .reveal-on-scroll-late {
+    animation-range: entry 12% cover 36%;
+  }
+}
+
 .animate-marquee {
   width: max-content;
-  animation: marquee 13.3s linear infinite;
+  animation: marquee 20s linear infinite;
   will-change: transform;
 }
 
@@ -64,6 +154,19 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .hero-copy-enter,
+  .hero-media-enter,
+  .reveal-on-scroll,
+  .reveal-on-scroll-late {
+    opacity: 1;
+    animation: none;
+    transform: none;
+  }
+
   .animate-marquee {
     animation: none;
     justify-content: center;

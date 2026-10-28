@@ -8,20 +8,24 @@ import { PremixStrip } from "@/components/home/PremixStrip";
 import { VideoQuote } from "@/components/home/VideoQuote";
 import { Testimonials } from "@/components/home/Testimonials";
 import { PartnerMarquee } from "@/components/home/PartnerMarquee";
+import { ValueStrip } from "@/components/home/ValueStrip";
+import { ShopByCategory } from "@/components/home/ShopByCategory";
 import { getFeaturedProducts, getProductsByCategory } from "@/lib/products";
 
 export default async function HomePage() {
   const [featured, premixes] = await Promise.all([
-    getFeaturedProducts(),
-    getProductsByCategory("instant-premix"),
+    getFeaturedProducts().catch(() => []),
+    getProductsByCategory("instant-premix").catch(() => []),
   ]);
 
   return (
     <>
       <Nav />
       <CartDrawer />
-      <main>
+      <main data-gentle-motion>
         <Hero />
+        <ValueStrip />
+        <ShopByCategory />
         <FeaturedProducts products={featured} />
         <BrandStory />
         <PremixStrip products={premixes} />

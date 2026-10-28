@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/adminAuth";
+import { invalidateProductCache } from "@/lib/products";
 import { db } from "@/db/client";
 import { products } from "@/db/schema";
 import { eq } from "drizzle-orm";
@@ -69,6 +70,7 @@ export async function POST(req: NextRequest) {
 
     const [row] = await db.insert(products).values(insertValues).returning();
 
+    invalidateProductCache();
     revalidatePath("/");
     revalidatePath("/shop");
     revalidatePath(`/shop/${normalizedSlug}`);

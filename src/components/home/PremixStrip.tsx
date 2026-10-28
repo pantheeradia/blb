@@ -32,10 +32,10 @@ function PremixCard({ product }: { product: Product }) {
   };
 
   return (
-    <div className="flex-none w-44 snap-start">
+    <div className="reveal-on-scroll min-w-0 snap-start">
       <Link href={`/shop/${product.slug}`} className="group block">
         <div
-          className="relative h-44 bg-[#EAD9C8] overflow-hidden mb-3"
+          className="relative mb-4 aspect-square overflow-hidden bg-[#EAD9C8]"
           onMouseEnter={() => setIsHovering(true)}
           onMouseLeave={() => {
             setIsHovering(false);
@@ -48,7 +48,7 @@ function PremixCard({ product }: { product: Product }) {
               alt={product.name}
               fill
               className="object-contain p-3 group-hover:scale-105 transition-transform duration-500"
-              sizes="176px"
+              sizes="(max-width: 640px) 50vw, 33vw"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-[#8B5E3C]">
@@ -97,7 +97,7 @@ function PremixCard({ product }: { product: Product }) {
           )}
 
           {product.regularPrice && (
-            <span className="absolute top-2 left-2 bg-[#C9953C] text-[#1A0E08] text-[9px] font-semibold uppercase tracking-wider px-2 py-0.5">
+            <span className="absolute left-2 top-2 bg-[#C9953C] px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-[#1A0E08]">
               Sale
             </span>
           )}
@@ -115,15 +115,25 @@ function PremixCard({ product }: { product: Product }) {
 }
 
 export function PremixStrip({ products }: Props) {
+  const withRealImages = products.filter(
+    (product) => product.images.length > 0 && Boolean(product.images[0])
+  );
+  const presentable = withRealImages.filter(
+    (product) => product.price >= 100 && product.price < 5000
+  );
+  const visibleProducts = (presentable.length >= 3 ? presentable : withRealImages).slice(0, 8);
+
+  if (visibleProducts.length === 0) return null;
+
   return (
-    <section className="bg-[#F7F0E6] py-24">
-      <div className="max-w-7xl mx-auto px-6">
+    <section className="bg-[#fffaf2] py-20 sm:py-28">
+      <div className="mx-auto max-w-7xl px-6">
         <div className="flex items-end justify-between mb-10">
           <div>
-            <p className="text-[10px] uppercase tracking-[0.2em] text-[#C9953C] mb-2">
-              Instant Premix
+            <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#9b6a3c]">
+              Easy does it
             </p>
-            <h2 className="font-serif text-2xl md:text-4xl text-[#1A0E08]">Ready in 60 seconds.</h2>
+            <h2 className="font-serif text-4xl leading-none tracking-[-0.025em] text-[#20110c] sm:text-5xl">A real cup. Ready in 60 seconds.</h2>
           </div>
           <Link
             href="/shop?category=instant-premix"
@@ -133,8 +143,8 @@ export function PremixStrip({ products }: Props) {
           </Link>
         </div>
 
-        <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory">
-          {products.map((product) => (
+        <div className="grid grid-cols-2 gap-5 sm:grid-cols-3">
+          {visibleProducts.map((product) => (
             <PremixCard key={product.id} product={product} />
           ))}
         </div>
