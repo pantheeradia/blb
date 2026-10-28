@@ -16,10 +16,10 @@ function ShopSkeleton() {
   return (
     <div className="mx-auto max-w-[1440px] px-6 py-16" aria-label="Loading products">
       <div className="mb-10 h-16 animate-pulse bg-[#ead9c8]" />
-      <div className="grid grid-cols-1 gap-x-5 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: 9 }).map((_, index) => (
           <div key={index} className="animate-pulse">
-            <div className="aspect-[4/5] bg-[#ead9c8]" />
+            <div className="aspect-[5/5.35] bg-[#e6d9ca]" />
             <div className="mt-5 h-3 w-1/3 bg-[#d8c5b0]" />
             <div className="mt-3 h-7 w-3/4 bg-[#ead9c8]" />
             <div className="mt-6 h-10 w-full bg-[#ead9c8]" />
@@ -37,8 +37,8 @@ export default async function ShopPage() {
     <>
       <Nav />
       <CartDrawer />
-      <main data-gentle-motion className="min-h-screen bg-[#f7f0e6]">
-        <section className="border-b border-[#cdbba7] bg-[#ead9c8] pt-16">
+      <main data-gentle-motion className="min-h-screen bg-[#f3ece3]">
+        <section className="border-b border-[#d2c0ac] bg-[#e8dccd] pt-16">
           <div className="mx-auto grid max-w-[1600px] lg:grid-cols-[0.92fr_1.08fr]">
             <div className="hero-copy-enter flex min-h-[390px] items-center px-6 py-14 sm:px-10 lg:px-16 xl:px-24">
               <div className="max-w-xl">
@@ -70,7 +70,7 @@ export default async function ShopPage() {
             </div>
           </div>
 
-          <div className="border-t border-[#20110c]/12 bg-[#f7f0e6]">
+          <div className="border-t border-[#27150e]/12 bg-[#f3ece3]">
             <div className="mx-auto grid max-w-[1440px] grid-cols-1 divide-y divide-[#20110c]/12 px-6 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
               {[
                 ["Roasted weekly", "Never pulled from stale stock"],

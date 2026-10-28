@@ -221,27 +221,27 @@ export function ShopClient({ products }: Props) {
   };
 
   return (
-    <section id="catalog" className="scroll-mt-16 bg-[#f7f0e6]">
+    <section id="catalog" className="scroll-mt-16 bg-[#f3ece3]">
       <div className="mx-auto max-w-[1440px] px-6 py-16 sm:py-20">
         <header className="grid gap-8 lg:grid-cols-[1fr_minmax(360px,0.72fr)] lg:items-end">
           <div>
-            <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#9b6a3c]">
+            <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#8f5e3b]">
               The collection
             </p>
-            <h2 className="max-w-2xl font-serif text-4xl leading-[0.98] tracking-[-0.035em] text-[#20110c] sm:text-5xl">
+            <h2 className="max-w-2xl font-serif text-4xl leading-[0.98] tracking-[-0.035em] text-[#27150e] sm:text-5xl">
               Pick a coffee that fits your ritual.
             </h2>
-            <p className="mt-4 max-w-xl text-sm leading-6 text-[#765f4f]">
+            <p className="mt-4 max-w-xl text-sm leading-6 text-[#705b4c]">
               From slow filter mornings to quick premix breaks, every product is made and packed by our team in Whitefield.
             </p>
           </div>
 
           <div>
-            <label htmlFor="shop-search" className="mb-2 block text-[9px] font-semibold uppercase tracking-[0.18em] text-[#806854]">
+            <label htmlFor="shop-search" className="mb-2 block text-[9px] font-semibold uppercase tracking-[0.18em] text-[#826a57]">
               Search the shelf
             </label>
-            <div className="flex items-center border-b border-[#9f8870] bg-[#fffaf2]/55 px-1 transition-colors focus-within:border-[#20110c]">
-              <Search size={17} aria-hidden="true" className="shrink-0 text-[#8f6d55]" />
+            <div className="flex items-center border-b border-[#a48c74] bg-[#faf6ef]/70 px-1 transition-colors focus-within:border-[#27150e]">
+              <Search size={17} aria-hidden="true" className="shrink-0 text-[#876b55]" />
               <input
                 id="shop-search"
                 type="search"
@@ -251,7 +251,7 @@ export function ShopClient({ products }: Props) {
                   setPage(1);
                 }}
                 placeholder="Coffee, roast, tasting note..."
-                className="w-full bg-transparent px-3 py-4 text-sm text-[#20110c] outline-none placeholder:text-[#8b735f]/65"
+                className="w-full bg-transparent px-3 py-4 text-sm text-[#27150e] outline-none placeholder:text-[#887260]/65"
               />
               {query && (
                 <button
@@ -261,7 +261,7 @@ export function ShopClient({ products }: Props) {
                     setPage(1);
                   }}
                   aria-label="Clear search"
-                  className="shrink-0 p-2 text-[#806854] transition-colors hover:text-[#20110c]"
+                  className="shrink-0 p-2 text-[#826a57] transition-colors hover:text-[#27150e]"
                 >
                   <X size={16} />
                 </button>
@@ -270,7 +270,7 @@ export function ShopClient({ products }: Props) {
           </div>
         </header>
 
-        <nav aria-label="Product collections" className="mt-12 border-y border-[#cdbba7]">
+        <nav aria-label="Product collections" className="mt-12 border-y border-[#d2c0ac]">
           <div className="scrollbar-hide flex gap-7 overflow-x-auto">
             {categories.map((category) => (
               <button
@@ -281,12 +281,12 @@ export function ShopClient({ products }: Props) {
                 className={cn(
                   "relative shrink-0 py-5 text-[10px] font-semibold uppercase tracking-[0.15em] transition-colors",
                   active === category.value
-                    ? "text-[#20110c] after:absolute after:inset-x-0 after:bottom-0 after:h-[2px] after:bg-[#20110c]"
-                    : "text-[#8b735f] hover:text-[#20110c]"
+                    ? "text-[#27150e] after:absolute after:inset-x-0 after:bottom-0 after:h-[2px] after:bg-[#27150e]"
+                    : "text-[#887260] hover:text-[#27150e]"
                 )}
               >
                 {category.label}
-                <sup className="ml-1.5 text-[8px] font-medium tabular-nums text-[#9b6a3c]">
+                <sup className="ml-1.5 text-[8px] font-medium tabular-nums text-[#8f5e3b]">
                   {categoryCounts[category.value] ?? 0}
                 </sup>
               </button>
@@ -295,13 +295,13 @@ export function ShopClient({ products }: Props) {
         </nav>
 
         <div className="flex flex-col gap-4 py-7 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs text-[#765f4f]" aria-live="polite">
-            <span className="font-semibold text-[#20110c]">{totalItems}</span>{" "}
+          <p className="text-xs text-[#705b4c]" aria-live="polite">
+            <span className="font-semibold text-[#27150e]">{totalItems}</span>{" "}
             {totalItems === 1 ? "result" : "results"} in {activeLabel.toLowerCase()}
             {query ? <span> for &ldquo;{query}&rdquo;</span> : null}
           </p>
 
-          <label className="flex items-center gap-3 text-[9px] font-semibold uppercase tracking-[0.15em] text-[#806854]">
+          <label className="flex items-center gap-3 text-[9px] font-semibold uppercase tracking-[0.15em] text-[#826a57]">
             <ArrowDownUp size={14} aria-hidden="true" />
             Sort
             <span className="relative">
@@ -311,14 +311,14 @@ export function ShopClient({ products }: Props) {
                   setSort(event.target.value as SortValue);
                   setPage(1);
                 }}
-                className="appearance-none border-b border-[#9f8870] bg-transparent py-2 pl-1 pr-7 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#20110c] outline-none transition-colors focus:border-[#20110c]"
+                className="appearance-none border-b border-[#a48c74] bg-transparent py-2 pl-1 pr-7 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#27150e] outline-none transition-colors focus:border-[#27150e]"
               >
                 <option value="featured">Featured</option>
                 <option value="price-asc">Price: low to high</option>
                 <option value="price-desc">Price: high to low</option>
                 <option value="name-asc">Name: A–Z</option>
               </select>
-              <ChevronDown size={13} aria-hidden="true" className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-[#806854]" />
+              <ChevronDown size={13} aria-hidden="true" className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-[#826a57]" />
             </span>
           </label>
         </div>
@@ -351,13 +351,13 @@ export function ShopClient({ products }: Props) {
               </button>
             </div>
           ) : active === "instant-premix" ? (
-            <div className="grid grid-cols-1 gap-x-5 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
               {visibleGroups.map((group, index) => (
                 <ProductGroupCard key={group.groupKey} group={group} priority={index < 3 && currentPage === 1} />
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-x-5 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
               {visibleProducts.map((product, index) => (
                 <ProductCard key={product.id} product={product} priority={index < 3 && currentPage === 1} />
               ))}

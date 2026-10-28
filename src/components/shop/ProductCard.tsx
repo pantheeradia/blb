@@ -59,11 +59,11 @@ export function ProductCard({ product, priority = false }: Props) {
         setImageError(false);
       }}
     >
-      <div className="relative aspect-[4/5] overflow-hidden bg-[#e7d8c7]">
+      <div className="relative aspect-[5/5.35] overflow-hidden bg-[#e6d9ca]">
         <Link
           href={detailHref}
           aria-label={"View " + product.name}
-          className="absolute inset-0 z-0 focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-[#20110c]"
+          className="absolute inset-0 z-0 focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-[#27150e]"
         >
           {currentImage && !imageError ? (
             <Image
@@ -76,13 +76,13 @@ export function ProductCard({ product, priority = false }: Props) {
               onError={() => setImageError(true)}
             />
           ) : (
-            <span className="flex h-full w-full items-center justify-center px-6 text-center text-xs text-[#8b735f]">
+            <span className="flex h-full w-full items-center justify-center px-6 text-center text-xs text-[#887260]">
               Product image unavailable
             </span>
           )}
         </Link>
 
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#20110c]/20 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#27150e]/20 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
         {hasMultipleImages && (
           <>
@@ -90,7 +90,7 @@ export function ProductCard({ product, priority = false }: Props) {
               type="button"
               onClick={showPreviousImage}
               aria-label="Previous product image"
-              className="absolute left-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center bg-[#fffaf2]/92 text-[#20110c] opacity-0 transition-all duration-300 hover:bg-[#fffaf2] focus:opacity-100 group-hover:opacity-100"
+              className="absolute left-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center bg-[#faf5ed]/92 text-[#27150e] opacity-0 transition-all duration-300 hover:bg-[#faf5ed] focus:opacity-100 group-hover:opacity-100"
             >
               <ChevronLeft size={15} />
             </button>
@@ -98,7 +98,7 @@ export function ProductCard({ product, priority = false }: Props) {
               type="button"
               onClick={showNextImage}
               aria-label="Next product image"
-              className="absolute right-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center bg-[#fffaf2]/92 text-[#20110c] opacity-0 transition-all duration-300 hover:bg-[#fffaf2] focus:opacity-100 group-hover:opacity-100"
+              className="absolute right-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center bg-[#faf5ed]/92 text-[#27150e] opacity-0 transition-all duration-300 hover:bg-[#faf5ed] focus:opacity-100 group-hover:opacity-100"
             >
               <ChevronRight size={15} />
             </button>
@@ -113,8 +113,8 @@ export function ProductCard({ product, priority = false }: Props) {
                   }}
                   aria-label={"View product image " + (index + 1)}
                   className={cn(
-                    "h-1.5 bg-[#fffaf2]/65 transition-all duration-300",
-                    index === currentImageIndex ? "w-6 bg-[#fffaf2]" : "w-1.5 hover:bg-[#fffaf2]"
+                    "h-1.5 bg-[#faf5ed]/65 transition-all duration-300",
+                    index === currentImageIndex ? "w-6 bg-[#faf5ed]" : "w-1.5 hover:bg-[#faf5ed]"
                   )}
                 />
               ))}
@@ -123,51 +123,51 @@ export function ProductCard({ product, priority = false }: Props) {
         )}
 
         {product.regularPrice && (
-          <span className="absolute left-3 top-3 z-10 bg-[#d7a35f] px-2.5 py-1 text-[8px] font-semibold uppercase tracking-[0.16em] text-[#20110c]">
+          <span className="absolute left-3 top-3 z-10 bg-[#aa7040] px-2.5 py-1 text-[8px] font-semibold uppercase tracking-[0.16em] text-[#fffaf2]">
             Sale
           </span>
         )}
         {!product.inStock && (
-          <span className="absolute right-3 top-3 z-10 bg-[#20110c] px-2.5 py-1 text-[8px] font-semibold uppercase tracking-[0.16em] text-[#fffaf2]">
+          <span className="absolute right-3 top-3 z-10 bg-[#27150e] px-2.5 py-1 text-[8px] font-semibold uppercase tracking-[0.16em] text-[#fffaf2]">
             Sold out
           </span>
         )}
       </div>
 
-      <div className="flex flex-1 flex-col pt-5">
-        <p className="text-[9px] font-semibold uppercase tracking-[0.17em] text-[#9b6a3c]">
+      <div className="flex flex-1 flex-col pt-4">
+        <p className="text-[9px] font-semibold uppercase tracking-[0.17em] text-[#8f5e3b]">
           {product.categoryLabel ?? product.category}
           {product.weight ? " · " + product.weight : ""}
         </p>
 
         <Link
           href={detailHref}
-          className="mt-2 block focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-[#20110c]"
+          className="mt-2 block focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-[#27150e]"
         >
-          <h3 className="font-serif text-[1.65rem] leading-[1.05] tracking-[-0.025em] text-[#20110c] transition-colors duration-300 group-hover:text-[#754528]">
+          <h3 className="font-serif text-[1.55rem] leading-[1.05] tracking-[-0.025em] text-[#27150e] transition-colors duration-300 group-hover:text-[#7a4b30]">
             {product.name}
           </h3>
         </Link>
 
-        <p className="mt-3 line-clamp-2 text-xs leading-5 text-[#765f4f]">
+        <p className="mt-2.5 line-clamp-2 text-xs leading-5 text-[#705b4c]">
           {product.shortDescription}
         </p>
 
         {(product.notes?.length ?? 0) > 0 && (
-          <p className="mt-3 text-[9px] uppercase tracking-[0.13em] text-[#9a806d]">
+          <p className="mt-3 text-[9px] uppercase tracking-[0.13em] text-[#897361]">
             {product.notes?.slice(0, 3).join(" / ")}
           </p>
         )}
 
-        <div className="mt-auto flex items-end justify-between gap-4 border-t border-[#d6c4af] pt-5">
+        <div className="mt-auto flex items-end justify-between gap-4 border-t border-[#d2c0ac] pt-4">
           <div>
-            <p className="text-[8px] uppercase tracking-[0.14em] text-[#9a806d]">From</p>
+            <p className="text-[8px] uppercase tracking-[0.14em] text-[#897361]">From</p>
             <div className="mt-1 flex flex-wrap items-center gap-2">
-              <span className="text-sm font-semibold tabular-nums text-[#20110c]">
+              <span className="text-sm font-semibold tabular-nums text-[#27150e]">
                 {formatPriceDisplay(product.price, weightOptions)}
               </span>
               {product.regularPrice && weightOptions.length === 0 && !needsVariantSelection && (
-                <span className="text-[10px] tabular-nums text-[#9a806d] line-through">
+                <span className="text-[10px] tabular-nums text-[#897361] line-through">
                   {formatPrice(product.regularPrice)}
                 </span>
               )}
@@ -178,14 +178,14 @@ export function ProductCard({ product, priority = false }: Props) {
             <button
               type="button"
               disabled
-              className="min-h-10 border border-[#cdbba7] px-4 text-[9px] font-semibold uppercase tracking-[0.14em] text-[#9a806d]"
+              className="min-h-10 border border-[#cdbba7] px-4 text-[9px] font-semibold uppercase tracking-[0.14em] text-[#897361]"
             >
               Unavailable
             </button>
           ) : needsSelection || needsVariantSelection ? (
             <Link
               href={detailHref}
-              className="inline-flex min-h-10 items-center gap-2 bg-[#20110c] px-4 text-[9px] font-semibold uppercase tracking-[0.14em] text-[#fffaf2] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#4a2818]"
+              className="inline-flex min-h-10 items-center gap-2 bg-[#27150e] px-4 text-[9px] font-semibold uppercase tracking-[0.14em] text-[#fffaf2] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#543222]"
             >
               Select <ArrowUpRight size={13} />
             </Link>
@@ -193,7 +193,7 @@ export function ProductCard({ product, priority = false }: Props) {
             <button
               type="button"
               onClick={() => addItem(product)}
-              className="inline-flex min-h-10 items-center gap-2 bg-[#20110c] px-4 text-[9px] font-semibold uppercase tracking-[0.14em] text-[#fffaf2] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#4a2818] active:translate-y-0"
+              className="inline-flex min-h-10 items-center gap-2 bg-[#27150e] px-4 text-[9px] font-semibold uppercase tracking-[0.14em] text-[#fffaf2] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#543222] active:translate-y-0"
             >
               <ShoppingBag size={12} />
               Add
