@@ -1,0 +1,168 @@
+name: BLB Database Backup
+
+on:
+  schedule:
+    # Approximately every two days at 2:00 AM IST (8:30 PM UTC).
+    # The even-day cron has a longer gap around some month boundaries.
+    - cron: "30 20 */2 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: blb-database-backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    name: Export, verify, compress, and retain
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      TURSO_API_TOKEN: ${{ secrets.TURSO_API_TOKEN }}
+      TURSO_DATABASE_NAME: ${{ secrets.TURSO_DATABASE_NAME }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Validate backup configuration
+        shell: bash
+        run: |
+          missing=0
+
+          for variable_name in \
+            TURSO_API_TOKEN \
+            TURSO_DATABASE_NAME
+          do
+            if [ -z "${!variable_name:-}" ]; then
+              echo "::error::Required GitHub Actions secret ${variable_name} is not configured."
+              missing=1
+            fi
+          done
+
+          exit "$missing"
+
+      - name: Install backup tools
+        shell: bash
+        run: |
+          curl -sSfL https://get.tur.so/install.sh | bash
+          echo "$HOME/.turso" >> "$GITHUB_PATH"
+
+          sudo apt-get update
+          sudo apt-get install -y sqlite3
+
+          "$HOME/.turso/turso" --version
+          sqlite3 --version
+
+      - name: Prepare backup names
+        shell: bash
+        run: |
+          timestamp="$(date -u +'%Y%m%d_%H%M%S')"
+          mkdir -p backups
+
+          echo "BACKUP_TIMESTAMP=$timestamp" >> "$GITHUB_ENV"
+          echo "SQL_FILE=backups/blb_database_${timestamp}.sql" >> "$GITHUB_ENV"
+          echo "COMPRESSED_FILE=backups/blb_database_${timestamp}.sql.gz" >> "$GITHUB_ENV"
+          echo "VERIFY_DB=backups/blb_database_${timestamp}_verification.db" >> "$GITHUB_ENV"
+
+      - name: Export Turso database
+        shell: bash
+        run: |
+          turso db shell "$TURSO_DATABASE_NAME" .dump > "$SQL_FILE"
+
+          if [ ! -s "$SQL_FILE" ]; then
+            echo "::error::Turso returned an empty database dump."
+            exit 1
+          fi
+
+          if ! grep -q "CREATE TABLE" "$SQL_FILE"; then
+            echo "::error::The database dump does not contain any CREATE TABLE statements."
+            exit 1
+          fi
+
+      - name: Restore and verify exported database
+        shell: bash
+        run: |
+          sqlite3 "$VERIFY_DB" < "$SQL_FILE"
+
+          integrity_result="$(sqlite3 "$VERIFY_DB" "PRAGMA integrity_check;")"
+          if [ "$integrity_result" != "ok" ]; then
+            echo "::error::SQLite integrity check failed: ${integrity_result}"
+            exit 1
+          fi
+
+          required_tables=(
+            orders
+            order_items
+            customers
+            products
+            coupons
+            settings
+            admin_users
+            pending_orders
+          )
+
+          for table_name in "${required_tables[@]}"; do
+            table_exists="$(
+              sqlite3 "$VERIFY_DB" \
+                "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='${table_name}';"
+            )"
+
+            if [ "$table_exists" != "1" ]; then
+              echo "::error::Required table ${table_name} is missing from the restored backup."
+              exit 1
+            fi
+          done
+
+          echo "Database dump restored successfully and passed integrity checks."
+
+      - name: Compress backup
+        shell: bash
+        run: |
+          gzip -9 -c "$SQL_FILE" > "$COMPRESSED_FILE"
+
+          if [ ! -s "$COMPRESSED_FILE" ]; then
+            echo "::error::Compressed backup was not created."
+            exit 1
+          fi
+
+          sha256sum "$COMPRESSED_FILE" > "${COMPRESSED_FILE}.sha256"
+
+      - name: Remove uncompressed working files
+        if: always()
+        shell: bash
+        run: |
+          rm -f \
+            "${SQL_FILE:-}" \
+            "${VERIFY_DB:-}"
+
+      - name: Upload GitHub artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: blb-database-backup-${{ env.BACKUP_TIMESTAMP }}
+          path: |
+            ${{ env.COMPRESSED_FILE }}
+            ${{ env.COMPRESSED_FILE }}.sha256
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 400
+
+      - name: Write backup summary
+        shell: bash
+        run: |
+          compressed_size="$(du -h "$COMPRESSED_FILE" | cut -f1)"
+
+          {
+            echo "## BLB database backup completed"
+            echo ""
+            echo "- Timestamp: ${BACKUP_TIMESTAMP} UTC"
+            echo "- Database: ${TURSO_DATABASE_NAME}"
+            echo "- Compressed file: $(basename "$COMPRESSED_FILE")"
+            echo "- Compressed size: ${compressed_size}"
+            echo "- Encryption: disabled"
+            echo "- Artifact retention: 400 days"
+            echo "- Verification: SQLite restore and integrity check passed"
+          } >> "$GITHUB_STEP_SUMMARY"
