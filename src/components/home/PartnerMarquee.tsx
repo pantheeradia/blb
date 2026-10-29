@@ -10,7 +10,7 @@ export function PartnerMarquee() {
   return (
     <section className="bg-blb-white py-16 overflow-hidden">
       <div className="max-w-7xl mx-auto px-6 mb-10">
-        <div className="text-center">
+        <div className="reveal-on-scroll text-center">
           <p className="text-[10px] uppercase tracking-[0.2em] text-gold mb-2">
             Our Partners
           </p>

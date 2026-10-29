@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/adminAuth";
 import { revalidatePath } from "next/cache";
+import { invalidateProductCache } from "@/lib/products";
 import { db } from "@/db/client";
 import { products } from "@/db/schema";
 import { eq } from "drizzle-orm";
@@ -53,6 +54,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
     const [row] = await db.update(products).set(updates).where(eq(products.id, Number(id))).returning();
 
+    invalidateProductCache();
     revalidatePath("/");
     revalidatePath("/shop");
     if (row?.slug) revalidatePath(`/shop/${row.slug}`);
@@ -97,6 +99,7 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   const { id } = await params;
   const [row] = await db.delete(products).where(eq(products.id, Number(id))).returning();
 
+  invalidateProductCache();
   revalidatePath("/");
   revalidatePath("/shop");
   if (row?.slug) revalidatePath(`/shop/${row.slug}`);

@@ -18,25 +18,30 @@ const testimonials = [
 
 export function Testimonials() {
   return (
-    <section className="bg-[#EAD9C8] py-24">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="mb-12 text-center">
-          <p className="text-[10px] uppercase tracking-[0.2em] text-[#C9953C] mb-2">
-            Reviews
-          </p>
-          <h2 className="font-serif text-2xl md:text-4xl text-[#1A0E08]">What our regulars say.</h2>
+    <section className="bg-[#ead9c8] py-16 sm:py-24">
+      <div className="mx-auto max-w-7xl px-6">
+        <div className="mb-10 max-w-xl sm:mb-12">
+          <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#8f5e35]">From the brew table</p>
+          <h2 className="font-serif text-4xl leading-none tracking-[-0.025em] text-[#20110c] sm:text-5xl">Passed on, cup by cup.</h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {testimonials.map((t, i) => (
-            <div key={i} className="bg-[#FAFAF8] p-8 border border-[#D4C4B0]">
-              <div className="text-[#C9953C] text-sm tracking-wider mb-4">★★★★★</div>
-              <p className="text-sm text-[#4A2512] leading-relaxed italic">&ldquo;{t.text}&rdquo;</p>
-              <div className="mt-6 pt-4 border-t border-[#D4C4B0]">
-                <p className="text-xs font-medium text-[#1A0E08]">{t.author}</p>
-                <p className="text-xs text-[#8B5E3C]">{t.location}</p>
+            <figure
+              key={t.author}
+              className={`reveal-on-scroll flex min-h-[300px] flex-col bg-[#fffaf2] p-7 sm:p-8 lg:min-h-[340px] xl:p-10 ${i === 0 ? "md:col-span-2 md:min-h-0 lg:col-span-1 lg:min-h-[340px]" : ""}`}
+            >
+              <div>
+                <div className="mb-7 text-xs tracking-[0.16em] text-[#9b6a3c]" aria-label="5 out of 5 stars">★★★★★</div> {/* taste-skill-ignore: familiar visual shorthand for the customer rating */}
+                <blockquote className="font-serif text-[1.65rem] leading-[1.18] tracking-[-0.02em] text-[#2b1810] lg:text-[1.75rem]">
+                  &ldquo;{t.text}&rdquo;
+                </blockquote>
               </div>
-            </div>
+              <figcaption className="mt-10 pt-1 lg:mt-auto">
+                <p className="text-sm font-semibold text-[#20110c]">{t.author}</p>
+                <p className="mt-1 text-xs text-[#8b6b57]">{t.location}</p>
+              </figcaption>
+            </figure>
           ))}
         </div>
       </div>

@@ -3,11 +3,11 @@ import Image from "next/image";
 
 export function BrandStory() {
   return (
-    <section className="bg-[#1A0E08] py-24 overflow-hidden">
+    <section className="overflow-hidden bg-[#1A0E08] py-24">
       <div className="max-w-7xl mx-auto px-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
-          <div className="relative">
-            <div className="relative h-96 md:h-[480px] overflow-hidden">
+          <div className="reveal-on-scroll relative">
+            <div className="relative h-96 overflow-hidden md:h-[480px]">
               <Image
                 src="/images/Hero-Image.webp"
                 alt="Bean Leaf Brew barista"
@@ -16,10 +16,10 @@ export function BrandStory() {
                 sizes="(max-width: 768px) 100vw, 50vw"
               />
             </div>
-            <div className="absolute -bottom-4 -right-4 w-32 h-32 bg-[#C9953C]/10 border border-[#C9953C]/20" />
+            <div className="absolute -bottom-4 -right-4 h-32 w-32 border border-[#C9953C]/20 bg-[#C9953C]/10" />
           </div>
 
-          <div>
+          <div className="reveal-on-scroll reveal-on-scroll-late">
             <p className="text-[10px] uppercase tracking-[0.2em] text-[#C9953C] mb-4">
               Our Story
             </p>

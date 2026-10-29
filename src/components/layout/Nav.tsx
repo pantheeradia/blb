@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -17,33 +17,38 @@ const links = [
 export function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const mounted = useSyncExternalStore(
+    () => () => undefined,
+    () => true,
+    () => false
+  );
   const { itemCount, openCart } = useCartStore();
   const pathname = usePathname();
   const count = itemCount();
 
   useEffect(() => {
-    setMounted(true);
     const handler = () => setScrolled(window.scrollY > 60);
-    handler();
+    const frame = window.requestAnimationFrame(handler);
     window.addEventListener("scroll", handler, { passive: true });
-    return () => window.removeEventListener("scroll", handler);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", handler);
+    };
   }, []);
-
-  const isTransparent = pathname === "/" && !scrolled;
 
   return (
     <>
       <nav
+        data-gentle-motion
         className={cn(
-          "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
-          isTransparent
-            ? "bg-transparent"
-            : "bg-[#1A0E08]/95 backdrop-blur-sm shadow-sm"
+          "fixed left-0 right-0 top-0 z-50 border-b transition-all duration-300",
+          scrolled
+            ? "border-[#f7f0e6]/10 bg-[#1A0E08]/96 shadow-[0_12px_40px_rgba(26,14,8,0.18)] backdrop-blur-md"
+            : "border-[#f7f0e6]/10 bg-[#1A0E08]"
         )}
       >
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link href="/" className="flex-shrink-0">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
+          <Link href="/" className="flex-shrink-0 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#C9953C]">
             <Image
               src="/images/BeanLeaf-Logo.png"
               alt="Bean Leaf Brew"
@@ -54,12 +59,16 @@ export function Nav() {
             />
           </Link>
 
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden items-center gap-9 md:flex">
             {links.map((l) => (
               <Link
                 key={l.href}
                 href={l.href}
-                className="text-[11px] uppercase tracking-widest text-[#F7F0E6]/80 hover:text-[#F7F0E6] transition-colors"
+                aria-current={pathname === l.href ? "page" : undefined}
+                className={cn(
+                  "relative py-2 text-[10px] font-medium uppercase tracking-[0.18em] text-[#F7F0E6]/65 transition-colors hover:text-[#F7F0E6] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#C9953C]",
+                  pathname === l.href && "text-[#F7F0E6] after:absolute after:inset-x-0 after:-bottom-1 after:h-px after:bg-[#C9953C]"
+                )}
               >
                 {l.label}
               </Link>
@@ -69,7 +78,7 @@ export function Nav() {
           <div className="flex items-center gap-4">
             <button
               onClick={openCart}
-              className="relative text-[#F7F0E6]/80 hover:text-[#F7F0E6] transition-colors"
+              className="relative p-2 text-[#F7F0E6]/75 transition-colors hover:text-[#F7F0E6] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C9953C]"
               aria-label="Open cart"
             >
               <ShoppingBag size={20} />
@@ -81,7 +90,7 @@ export function Nav() {
             </button>
 
             <button
-              className="md:hidden text-[#F7F0E6]/80 hover:text-[#F7F0E6] transition-colors"
+              className="p-2 text-[#F7F0E6]/75 transition-colors hover:text-[#F7F0E6] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C9953C] md:hidden"
               onClick={() => setMobileOpen((v) => !v)}
               aria-label="Toggle menu"
             >
@@ -91,7 +100,7 @@ export function Nav() {
         </div>
 
         {mobileOpen && (
-          <div className="md:hidden bg-[#1A0E08] border-t border-[#4A2512]/40 px-6 py-4 flex flex-col gap-4">
+          <div className="flex flex-col gap-4 border-t border-[#4A2512]/40 bg-[#1A0E08] px-6 py-4 md:hidden">
             {links.map((l) => (
               <Link
                 key={l.href}

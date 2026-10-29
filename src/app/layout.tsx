@@ -27,9 +27,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" data-scroll-behavior="smooth">
       <head>
-        <link rel="preload" as="image" href="/images/HB_01.webp" />
+        <link rel="preload" as="image" href="/images/HB_03.webp" />
       </head>
       <body className={`${inter.variable} ${playfair.variable} antialiased`}>
         <UtmTracker />

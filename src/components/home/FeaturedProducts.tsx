@@ -4,184 +4,146 @@ import Link from "next/link";
 import Image from "next/image";
 import { type Product } from "@/types";
 import { useCartStore } from "@/store/cart";
-import { ShoppingBag, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowUpRight, ShoppingBag } from "lucide-react";
 import { formatPriceDisplay, requiresOptionSelection } from "@/lib/productOptions";
-import { useState } from "react";
 
 interface Props {
   products: Product[];
 }
 
-function FeaturedProductCard({ product }: { product: Product }) {
+function ProductAction({
+  product,
+  light = false,
+}: {
+  product: Product;
+  light?: boolean;
+}) {
   const { addItem } = useCartStore();
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isHovering, setIsHovering] = useState(false);
-  const [imageError, setImageError] = useState(false);
+  const actionClass = light
+    ? "border border-[#fffaf2]/45 text-[#fffaf2] hover:border-[#d7a35f] hover:bg-[#d7a35f] hover:text-[#20110c]"
+    : "bg-[#20110c] text-[#fffaf2] hover:bg-[#4a2818]";
 
-  const hasValidImages = product.images.length > 0 && product.images[0] !== "";
-  const hasMultipleImages = hasValidImages && product.images.length > 1;
-  const currentImage = hasValidImages ? product.images[currentImageIndex] : null;
-
-  const handlePrevImage = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setCurrentImageIndex((prev) => (prev === 0 ? product.images.length - 1 : prev - 1));
-    setImageError(false);
-  };
-
-  const handleNextImage = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setCurrentImageIndex((prev) => (prev === product.images.length - 1 ? 0 : prev + 1));
-    setImageError(false);
-  };
-
-  const handleImageError = () => {
-    setImageError(true);
-  };
+  if (
+    requiresOptionSelection(
+      product.category,
+      product.weightOptions ?? [],
+      product.brewingEquipmentOptions ?? []
+    )
+  ) {
+    return (
+      <Link
+        href={`/shop/${product.slug}`}
+        className={`inline-flex min-h-11 items-center gap-2 px-4 text-[10px] font-semibold uppercase tracking-[0.14em] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9b6a3c] ${actionClass}`}
+      >
+        Select roast <ArrowUpRight size={13} />
+      </Link>
+    );
+  }
 
   return (
-    <div className="group bg-[#FAFAF8] border border-[#D4C4B0] overflow-hidden hover:shadow-md transition-shadow flex flex-col w-full">
-      <Link href={`/shop/${product.slug}`} className="flex flex-col flex-1">
-        <div
-          className="relative h-60 bg-[#EAD9C8] overflow-hidden flex-shrink-0"
-          onMouseEnter={() => setIsHovering(true)}
-          onMouseLeave={() => {
-            setIsHovering(false);
-            setCurrentImageIndex(0);
-          }}
-        >
-          {currentImage && !imageError ? (
-            <Image
-              src={currentImage}
-              alt={product.name}
-              fill
-              className="object-cover group-hover:scale-105 transition-transform duration-500"
-              sizes="(max-width: 768px) 100vw, 33vw"
-              onError={handleImageError}
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-[#8B5E3C]">
-              {hasValidImages ? (
-                <>
-                  <svg className="w-8 h-8 mb-1 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586 1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  <p className="text-xs">Image not available</p>
-                </>
-              ) : (
-                <p className="text-xs">No image</p>
-              )}
-            </div>
-          )}
+    <button
+      onClick={() => addItem(product)}
+      className={`inline-flex min-h-11 items-center gap-2 px-4 text-[10px] font-semibold uppercase tracking-[0.14em] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9b6a3c] ${actionClass}`}
+    >
+      <ShoppingBag size={13} /> Add to bag
+    </button>
+  );
+}
 
-          {/* Image Navigation Controls - Show on hover if multiple images */}
-          {hasMultipleImages && isHovering && (
-            <>
-              <button
-                onClick={handlePrevImage}
-                className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-[#1A0E08] p-1.5 rounded-full shadow-md transition-all opacity-0 group-hover:opacity-100 z-10"
-                aria-label="Previous image"
-              >
-                <ChevronLeft size={16} />
-              </button>
-              <button
-                onClick={handleNextImage}
-                className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-[#1A0E08] p-1.5 rounded-full shadow-md transition-all opacity-0 group-hover:opacity-100 z-10"
-                aria-label="Next image"
-              >
-                <ChevronRight size={16} />
-              </button>
+function PrimaryProduct({ product }: { product: Product }) {
+  const image = product.images.find(Boolean);
 
-              {/* Image Indicators */}
-              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                {product.images.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setCurrentImageIndex(index);
-                    }}
-                    className={`w-1.5 h-1.5 rounded-full transition-all ${
-                      index === currentImageIndex 
-                        ? "bg-white w-6" 
-                        : "bg-white/60 hover:bg-white/80"
-                    }`}
-                    aria-label={`View image ${index + 1}`}
-                  />
-                ))}
-              </div>
-            </>
-          )}
+  return (
+    <article className="reveal-on-scroll group relative min-h-[560px] overflow-hidden bg-[#24130d] lg:min-h-[650px]">
+      {image && (
+        <Image
+          src={image}
+          alt={product.name}
+          fill
+          className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.025]"
+          sizes="(max-width: 1024px) 100vw, 62vw"
+        />
+      )}
+      <div className="absolute inset-0 bg-gradient-to-t from-[#1b0d08]/95 via-[#1b0d08]/25 to-transparent" />
+      <div className="absolute inset-x-0 bottom-0 p-7 text-[#fffaf2] sm:p-10">
+        <p className="mb-3 text-[9px] font-semibold uppercase tracking-[0.2em] text-[#d7a35f]">House favourite</p>
+        <Link href={`/shop/${product.slug}`} className="inline-block focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#d7a35f]">
+          <h3 className="font-serif text-4xl tracking-[-0.03em] sm:text-5xl">{product.name}</h3>
+        </Link>
+        <p className="mt-3 max-w-md text-sm leading-6 text-[#fffaf2]/70">{product.shortDescription}</p>
+        <div className="mt-7 flex flex-wrap items-center gap-5">
+          <span className="min-w-16 text-base font-semibold tabular-nums">
+            {formatPriceDisplay(product.price, product.weightOptions ?? [])}
+          </span>
+          <ProductAction product={product} light />
         </div>
-        <div className="p-5 flex-1">
-          <h3 className="font-serif text-lg text-[#1A0E08] mb-1">{product.name}</h3>
-          <p className="text-xs text-[#8B5E3C] leading-relaxed">{product.shortDescription}</p>
-          {product.notes && (
-            <div className="flex gap-1.5 mt-3">
-              {product.notes.map((note) => (
-                <span key={note} className="text-[9px] uppercase tracking-wider px-2 py-0.5 bg-[#EAD9C8] text-[#4A2512]">
-                  {note}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-      </Link>
-      <div className="px-5 pb-5 flex items-center justify-between flex-shrink-0">
-        <span className="font-medium text-[#1A0E08]">
-          {formatPriceDisplay(product.price, product.weightOptions ?? [])}
-        </span>
-        {requiresOptionSelection(product.category, product.weightOptions ?? [], product.brewingEquipmentOptions ?? []) ? (
-          <Link
-            href={`/shop/${product.slug}`}
-            className="flex items-center gap-2 bg-[#1A0E08] text-[#F7F0E6] text-[10px] uppercase tracking-widest px-4 py-2 hover:bg-[#4A2512] transition-colors"
-          >
-            <ShoppingBag size={12} />
-            Select
-          </Link>
-        ) : (
-          <button
-            onClick={() => addItem(product)}
-            className="flex items-center gap-2 bg-[#1A0E08] text-[#F7F0E6] text-[10px] uppercase tracking-widest px-4 py-2 hover:bg-[#4A2512] transition-colors"
-          >
-            <ShoppingBag size={12} />
-            Add
-          </button>
-        )}
       </div>
-    </div>
+    </article>
+  );
+}
+
+function CompactProduct({ product }: { product: Product }) {
+  const image = product.images.find(Boolean);
+
+  return (
+    <article className="reveal-on-scroll reveal-on-scroll-late group grid min-h-[270px] grid-cols-[0.9fr_1.1fr] overflow-hidden bg-[#fffaf2]">
+      <Link href={`/shop/${product.slug}`} className="relative overflow-hidden bg-[#dfcbb5] focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-[#9b6a3c]">
+        {image && (
+          <Image
+            src={image}
+            alt={product.name}
+            fill
+            className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+            sizes="(max-width: 1024px) 45vw, 18vw"
+          />
+        )}
+      </Link>
+      <div className="flex min-w-0 flex-col justify-between p-5 sm:p-6">
+        <div>
+          <p className="mb-2 text-[9px] font-semibold uppercase tracking-[0.18em] text-[#9b6a3c]">{product.categoryLabel}</p>
+          <Link href={`/shop/${product.slug}`} className="focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-[#9b6a3c]">
+            <h3 className="font-serif text-2xl leading-tight tracking-[-0.02em] text-[#20110c]">{product.name}</h3>
+          </Link>
+          <p className="mt-3 line-clamp-2 text-xs leading-5 text-[#765f4f]">{product.shortDescription}</p>
+        </div>
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+          <span className="text-sm font-semibold tabular-nums text-[#20110c]">
+            {formatPriceDisplay(product.price, product.weightOptions ?? [])}
+          </span>
+          <ProductAction product={product} />
+        </div>
+      </div>
+    </article>
   );
 }
 
 export function FeaturedProducts({ products }: Props) {
+  if (products.length === 0) return null;
+
+  const [primary, ...alternatives] = products.slice(0, 3);
 
   return (
-    <section className="bg-[#F7F0E6] py-24">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="mb-12">
-          <p className="text-[10px] uppercase tracking-[0.2em] text-[#C9953C] mb-2">
-            Signature Roasts
-          </p>
-          <h2 className="font-serif text-2xl md:text-4xl text-[#1A0E08]">Crafted to perfection.</h2>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {products.map((product) => (
-            <div key={product.id} className="flex">
-              <FeaturedProductCard product={product} />
-            </div>
-          ))}
-        </div>
-
-        <div className="text-center mt-12">
-          <Link
-            href="/shop"
-            className="text-xs uppercase tracking-widest text-[#1A0E08] border-b border-[#1A0E08] pb-0.5 hover:text-[#C9953C] hover:border-[#C9953C] transition-colors"
-          >
-            View all products
+    <section className="bg-[#ead9c8] py-20 sm:py-28">
+      <div className="mx-auto max-w-7xl px-6">
+        <div className="mb-10 flex flex-col justify-between gap-6 md:flex-row md:items-end">
+          <div>
+            <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#8f5e35]">Most loved</p>
+            <h2 className="max-w-xl font-serif text-4xl leading-none tracking-[-0.025em] text-[#20110c] sm:text-5xl">Start with the house favourites.</h2>
+          </div>
+          <Link href="/shop" className="group inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#4a2818] underline decoration-[#9b6a3c] underline-offset-8">
+            Shop all coffee <span aria-hidden="true" className="transition-transform group-hover:translate-x-1">→</span>
           </Link>
+        </div>
+
+        <div className="grid gap-4 lg:grid-cols-[1.25fr_0.75fr]">
+          <PrimaryProduct product={primary} />
+          {alternatives.length > 0 && (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+              {alternatives.map((product) => (
+                <CompactProduct key={product.id} product={product} />
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </section>
