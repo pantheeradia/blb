@@ -2,6 +2,12 @@ import { db } from "@/db/client";
 import { orders, orderItems, customers, coupons, pendingOrders } from "@/db/schema";
 import { eq, sql } from "drizzle-orm";
 import { generateOrderNumber } from "@/lib/orderNumber";
+import Razorpay from "razorpay";
+
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID!,
+  key_secret: process.env.RAZORPAY_KEY_SECRET!,
+});
 
 export type CustomerData = {
   name: string;
@@ -35,6 +41,59 @@ export async function createOrderFromPending(
   const [pending] = await db.select().from(pendingOrders).where(eq(pendingOrders.id, razorpayOrderId)).limit(1);
   if (!pending) {
     return { success: false, error: "Pending order not found" };
+  }
+
+  // A valid checkout signature proves the response came from Razorpay, but it
+  // does not by itself prove that the payment has been captured. Fetch the
+  // payment from Razorpay before creating any permanent order records.
+  let payment;
+  try {
+    payment = await razorpay.payments.fetch(razorpayPaymentId);
+  } catch (error) {
+    console.error("Failed to fetch Razorpay payment status", {
+      razorpayOrderId,
+      razorpayPaymentId,
+      error,
+    });
+    return { success: false, error: "Unable to verify payment status with Razorpay" };
+  }
+
+  if (payment.order_id !== razorpayOrderId) {
+    console.error("Razorpay payment belongs to a different order", {
+      expectedOrderId: razorpayOrderId,
+      actualOrderId: payment.order_id,
+      razorpayPaymentId,
+    });
+    return { success: false, error: "Payment does not belong to this order" };
+  }
+
+  if (payment.status !== "captured" || payment.captured !== true) {
+    console.warn("Razorpay payment is not captured", {
+      razorpayOrderId,
+      razorpayPaymentId,
+      paymentStatus: payment.status,
+    });
+    return { success: false, error: `Payment is not captured (status: ${payment.status})` };
+  }
+
+  const paymentAmountPaise = Number(payment.amount);
+  if (!Number.isFinite(paymentAmountPaise) || paymentAmountPaise !== pending.amountPaise) {
+    console.error("Razorpay payment amount mismatch", {
+      razorpayOrderId,
+      razorpayPaymentId,
+      expectedAmountPaise: pending.amountPaise,
+      actualAmountPaise: payment.amount,
+    });
+    return { success: false, error: "Payment amount does not match this order" };
+  }
+
+  if (payment.currency.toUpperCase() !== "INR") {
+    console.error("Unexpected Razorpay payment currency", {
+      razorpayOrderId,
+      razorpayPaymentId,
+      currency: payment.currency,
+    });
+    return { success: false, error: "Payment currency does not match this order" };
   }
 
   const lineItems: Array<{
