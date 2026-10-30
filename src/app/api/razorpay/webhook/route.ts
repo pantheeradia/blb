@@ -79,9 +79,12 @@ export async function POST(req: NextRequest) {
       console.log("Order created via webhook:", result.orderNumber);
     } else {
       console.error("Webhook order creation failed:", result.error);
+      // Do not acknowledge a captured payment that was not saved. A non-2xx
+      // response allows Razorpay to retry the webhook delivery.
+      return NextResponse.json({ error: "Order creation failed" }, { status: 500 });
     }
   }
 
-  // Always return 200 to Razorpay to acknowledge receipt
+  // Acknowledge events that were either irrelevant or processed successfully.
   return NextResponse.json({ ok: true });
 }
