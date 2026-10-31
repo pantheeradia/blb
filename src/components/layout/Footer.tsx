@@ -21,12 +21,12 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
           <div className="md:col-span-2">
             <Image
-              src="/images/BeanLeaf-Logo.png"
+              src="/images/bean-leaf-brew-logo-enhanced.png"
               alt="Bean Leaf Brew"
-              width={140}
-              height={42}
-              style={{ height: "40px", width: "auto" }}
-              className="mb-4"
+              width={112}
+              height={112}
+              quality={100}
+              className="mb-5 h-28 w-28 object-contain"
             />
             <p className="text-sm text-[#F7F0E6]/60 leading-relaxed max-w-sm">
               Artisan coffee roasted in small batches in Whitefield, Bengaluru.

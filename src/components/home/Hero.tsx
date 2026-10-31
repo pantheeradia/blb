@@ -28,7 +28,7 @@ export function Hero() {
   }, []);
 
   return (
-    <section className="relative overflow-hidden bg-[#efe5d7] pt-16">
+    <section className="relative overflow-hidden bg-[#efe5d7] pt-20">
       <div className="mx-auto grid min-h-[calc(100dvh-4rem)] max-w-[1600px] lg:h-[calc(100dvh-4rem)] lg:min-h-[620px] lg:max-h-[760px] lg:grid-cols-[0.92fr_1.08fr]">
         <div className="relative z-10 flex items-center px-6 py-16 sm:px-10 lg:px-16 lg:py-10 xl:px-24 xl:py-12">
           <div className="hero-copy-enter max-w-[620px]">
