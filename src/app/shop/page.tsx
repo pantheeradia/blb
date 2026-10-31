@@ -38,7 +38,7 @@ export default async function ShopPage() {
       <Nav />
       <CartDrawer />
       <main data-gentle-motion className="min-h-screen bg-[#f3ece3]">
-        <section className="border-b border-[#d2c0ac] bg-[#e8dccd] pt-16">
+        <section className="border-b border-[#d2c0ac] bg-[#e8dccd] pt-20">
           <div className="mx-auto grid max-w-[1600px] lg:grid-cols-[0.92fr_1.08fr]">
             <div className="hero-copy-enter flex min-h-[390px] items-center px-6 py-14 sm:px-10 lg:px-16 xl:px-24">
               <div className="max-w-xl">
