@@ -1,11 +1,14 @@
 import { db } from "@/db/client";
 import { products } from "@/db/schema";
-import { and, or, like, eq } from "drizzle-orm";
+import { and, or, like, eq, desc, sql } from "drizzle-orm";
 import Image from "next/image";
 import Link from "next/link";
 import { AddProductButton, EditProductButton, DeleteProductButton, ToggleStockButton, ToggleVisibilityButton } from "./ProductActions";
 import { SearchInput } from "../_components/SearchInput";
+import { Pagination } from "../_components/Pagination";
 import { CATEGORIES, getCategoryLabel } from "@/lib/categories";
+
+const PAGE_SIZE = 25;
 
 const STOCK_OPTIONS = [
   { key: "all",    label: "All Stock" },
@@ -18,9 +21,9 @@ type StockKey = (typeof STOCK_OPTIONS)[number]["key"];
 export default async function ProductsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; category?: string; stock?: string }>;
+  searchParams: Promise<{ q?: string; category?: string; stock?: string; page?: string }>;
 }) {
-  const { q, category: categoryParam, stock: stockParam } = await searchParams;
+  const { q, category: categoryParam, stock: stockParam, page: pageParam } = await searchParams;
 
   const CATEGORY_TABS = [
     { key: "all", label: "All" },
@@ -32,6 +35,7 @@ export default async function ProductsPage({
   const activeStock: StockKey =
     STOCK_OPTIONS.find((t) => t.key === stockParam)?.key ?? "all";
   const search = q?.trim() || undefined;
+  const page = Math.max(1, Number.parseInt(pageParam ?? "1", 10) || 1);
 
   const stockFilter =
     activeStock === "in"  ? eq(products.inStock, true)  :
@@ -41,38 +45,45 @@ export default async function ProductsPage({
     ? or(like(products.name, `%${search}%`), like(products.slug, `%${search}%`))
     : undefined;
 
-  // Category filtering/counting is done in-memory on normalized slugs so that
-  // legacy slugs (e.g. "ground-coffee") map onto the new hardcoded categories.
-  const allMatching = await db.select().from(products).where(and(stockFilter, searchFilter));
+  const categoryFilter = activeCategory === "all" ? undefined : eq(products.category, activeCategory);
+  const listFilter = and(stockFilter, searchFilter, categoryFilter);
+  const countFilter = and(stockFilter, searchFilter);
 
-  const rows =
-    activeCategory === "all"
-      ? allMatching
-      : activeCategory === "instant-premix"
-      ? allMatching.filter((r) => r.category === "instant-premix")
-      : allMatching.filter((r) => r.category === activeCategory);
+  const [rows, [{ count: rawTotal }], categoryCounts] = await Promise.all([
+    db.select()
+      .from(products)
+      .where(listFilter)
+      .orderBy(desc(products.createdAt))
+      .limit(PAGE_SIZE)
+      .offset((page - 1) * PAGE_SIZE),
+    db.select({ count: sql<number>`count(*)` }).from(products).where(listFilter),
+    db.select({ category: products.category, count: sql<number>`count(*)` })
+      .from(products)
+      .where(countFilter)
+      .groupBy(products.category),
+  ]);
 
-  const categoryCount: Record<string, number> = {};
-  for (const r of allMatching) {
-    categoryCount[r.category] = (categoryCount[r.category] ?? 0) + 1;
-  }
-
-  // Calculate Instant Premix count (products with instant-premix category)
-  const instantPremixCount = categoryCount["instant-premix"] ?? 0;
-
-  const totalProductCount = allMatching.length;
+  const total = Number(rawTotal);
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+  const categoryCount = Object.fromEntries(
+    categoryCounts.map((row) => [row.category, Number(row.count)])
+  ) as Record<string, number>;
+  const totalProductCount = categoryCounts.reduce((sum, row) => sum + Number(row.count), 0);
 
   // baseParams for SearchInput (preserves category + stock, not q or page)
   const baseParamsForSearch = new URLSearchParams();
   if (activeCategory !== "all") baseParamsForSearch.set("category", activeCategory);
   if (activeStock !== "all") baseParamsForSearch.set("stock", activeStock);
 
+  const baseParamsForPagination = new URLSearchParams(baseParamsForSearch);
+  if (search) baseParamsForPagination.set("q", search);
+
   return (
     <div className="p-8">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-white text-2xl font-semibold">Products</h1>
-          <p className="text-gray-500 text-xs mt-1">{rows.length} product{rows.length !== 1 ? "s" : ""}</p>
+          <p className="text-gray-500 text-xs mt-1">{total} product{total !== 1 ? "s" : ""}</p>
         </div>
         <div className="flex items-center gap-2">
           <SearchInput
@@ -222,6 +233,14 @@ export default async function ProductsPage({
               })}
             </tbody>
           </table>
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            total={total}
+            pageSize={PAGE_SIZE}
+            pathname="/admin/products"
+            baseParams={baseParamsForPagination.toString()}
+          />
         </div>
       )}
     </div>

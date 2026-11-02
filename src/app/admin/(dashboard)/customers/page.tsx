@@ -1,6 +1,6 @@
 import { db } from "@/db/client";
 import { customers } from "@/db/schema";
-import { desc, or, like, and, sql } from "drizzle-orm";
+import { desc, or, like, sql } from "drizzle-orm";
 import { SearchInput } from "../_components/SearchInput";
 import { Pagination } from "../_components/Pagination";
 

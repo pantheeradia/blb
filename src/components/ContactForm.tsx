@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 interface FormData {
   name: string;
@@ -12,6 +12,7 @@ interface FormData {
 export function ContactForm() {
   const [form, setForm] = useState<FormData>({ name: "", email: "", subject: "", message: "" });
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const requestInFlight = useRef(false);
 
   function set(field: keyof FormData, val: string) {
     setForm((f) => ({ ...f, [field]: val }));
@@ -19,6 +20,8 @@ export function ContactForm() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (requestInFlight.current) return;
+    requestInFlight.current = true;
     setStatus("loading");
     try {
       const res = await fetch("/api/contact", {
@@ -34,6 +37,8 @@ export function ContactForm() {
       }
     } catch {
       setStatus("error");
+    } finally {
+      requestInFlight.current = false;
     }
   }
 

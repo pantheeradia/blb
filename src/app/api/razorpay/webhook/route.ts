@@ -4,6 +4,8 @@ import { db } from "@/db/client";
 import { pendingOrders } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { createOrderFromPending, CustomerData, AttributionData } from "@/lib/createOrderFromPending";
+import { sendOrderConfirmation } from "@/lib/sendOrderConfirmation";
+import { enqueueBackgroundJob } from "@/lib/backgroundJobs";
 
 // Razorpay sends raw body for signature verification - must read as text
 export async function POST(req: NextRequest) {
@@ -77,6 +79,11 @@ export async function POST(req: NextRequest) {
     const result = await createOrderFromPending(razorpayOrderId, razorpayPaymentId, customer, attribution);
     if (result.success) {
       console.log("Order created via webhook:", result.orderNumber);
+      if (result.created) {
+        enqueueBackgroundJob("order-confirmation-email", () =>
+          sendOrderConfirmation({ customer, orderId: razorpayOrderId, orderNumber: result.orderNumber, paymentId: razorpayPaymentId })
+        );
+      }
     } else {
       console.error("Webhook order creation failed:", result.error);
       // Do not acknowledge a captured payment that was not saved. A non-2xx

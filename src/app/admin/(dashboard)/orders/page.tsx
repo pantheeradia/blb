@@ -96,12 +96,12 @@ export default async function OrdersPage({
             pathname="/admin/orders"
             baseParams={baseParamsForSearch}
           />
-          <a
+          <Link
             href="/api/admin/orders/export"
             className="text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 px-3 py-1.5 rounded border border-gray-700 transition-colors whitespace-nowrap"
           >
             Export CSV
-          </a>
+          </Link>
         </div>
       </div>
 

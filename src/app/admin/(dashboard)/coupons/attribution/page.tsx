@@ -1,5 +1,4 @@
 import { db } from "@/db/client";
-import { orders, coupons } from "@/db/schema";
 import { sql } from "drizzle-orm";
 import Link from "next/link";
 import { CouponsTabs } from "../CouponsTabs";

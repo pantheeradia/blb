@@ -4,13 +4,44 @@ import { requireAdmin } from "@/lib/adminAuth";
 import { invalidateProductCache } from "@/lib/products";
 import { db } from "@/db/client";
 import { products } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { and, desc, eq, like, or, sql } from "drizzle-orm";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   const unauth = await requireAdmin();
   if (unauth) return unauth;
-  const rows = await db.select().from(products);
-  return NextResponse.json(rows);
+
+  const page = Math.max(1, Number.parseInt(req.nextUrl.searchParams.get("page") ?? "1", 10) || 1);
+  const pageSize = Math.min(100, Math.max(1, Number.parseInt(req.nextUrl.searchParams.get("pageSize") ?? "25", 10) || 25));
+  const query = req.nextUrl.searchParams.get("q")?.trim();
+  const category = req.nextUrl.searchParams.get("category")?.trim();
+  const stock = req.nextUrl.searchParams.get("stock");
+
+  const searchFilter = query
+    ? or(like(products.name, `%${query}%`), like(products.slug, `%${query}%`))
+    : undefined;
+  const categoryFilter = category && category !== "all" ? eq(products.category, category) : undefined;
+  const stockFilter = stock === "in"
+    ? eq(products.inStock, true)
+    : stock === "out"
+      ? eq(products.inStock, false)
+      : undefined;
+  const where = and(searchFilter, categoryFilter, stockFilter);
+
+  const [rows, [{ total: rawTotal }]] = await Promise.all([
+    db.select()
+      .from(products)
+      .where(where)
+      .orderBy(desc(products.createdAt))
+      .limit(pageSize)
+      .offset((page - 1) * pageSize),
+    db.select({ total: sql<number>`count(*)` }).from(products).where(where),
+  ]);
+  const total = Number(rawTotal);
+
+  return NextResponse.json({
+    data: rows,
+    pagination: { page, pageSize, total, totalPages: Math.ceil(total / pageSize) },
+  });
 }
 
 export async function POST(req: NextRequest) {
@@ -86,7 +117,7 @@ export async function POST(req: NextRequest) {
     let statusCode = 500;
 
     if (error && typeof error === "object" && "cause" in error) {
-      const cause = error.cause as any;
+      const cause = error.cause as { code?: string; message?: string } | undefined;
       if (cause?.code === "SQLITE_CONSTRAINT") {
         if (cause.message?.includes("UNIQUE constraint failed: products.slug")) {
           errorMessage = "A product with this slug already exists. Please use a different slug.";

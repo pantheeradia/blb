@@ -1,0 +1,266 @@
+{
+  "summary": {
+    "health_score": 52,
+    "business_type": "E-commerce specialty coffee and instant premix brand with a local Bengaluru experience-center presence",
+    "audit_date": "2026-11-01",
+    "top_findings": [
+      "Spam review is published in Product JSON-LD and counted in Morning Buzz aggregateRating",
+      "Homepage contains placeholder copy, three H1 elements, and no meta description",
+      "XML sitemaps expose utility, redirected, template, form, author, and default-content URLs",
+      "Homepage transfers about 65 MB in mobile Lighthouse, including about 58.9 MB of video",
+      "Product/category content and Product schema lack important commerce and trust details"
+    ],
+    "quick_wins": [
+      "Remove the spam review and recalculate aggregateRating",
+      "Replace homepage placeholder copy and use one descriptive H1",
+      "Remove noindex and junk URLs from XML sitemaps",
+      "Add homepage title, meta description, canonical, and Organization JSON-LD",
+      "Remove high fetch priority from the logo and prioritize the real LCP asset"
+    ],
+    "limitations": [
+      "No Google Search Console, GA4, Merchant Center, or Google Business Profile access",
+      "No CrUX field data; performance measurements are mobile Lighthouse lab data",
+      "Desktop Lighthouse timed out",
+      "Platform-specific AI citation visibility was not measured"
+    ]
+  },
+  "categories": [
+    {
+      "name": "Technical SEO",
+      "score": 67,
+      "what_works": [
+        "robots.txt and sitemap are reachable",
+        "HTTPS and canonical host redirects work",
+        "Primary content is present in raw HTML"
+      ],
+      "findings": [
+        {
+          "title": "Sitemap includes low-value and non-indexable URLs",
+          "severity": "High",
+          "description": "The 47-URL sitemap includes cart, checkout, account, default post, builder templates, form artifacts, and author archives.",
+          "recommendation": "Submit only 200, canonical, indexable URLs and noindex or delete junk content."
+        },
+        {
+          "title": "Canonical coverage is inconsistent",
+          "severity": "Medium",
+          "description": "Sampled shop and product-category pages had no canonical tag.",
+          "recommendation": "Add self-referencing canonical metadata to every indexable template."
+        },
+        {
+          "title": "Security headers are incomplete",
+          "severity": "Low",
+          "description": "HSTS, X-Frame-Options, X-Content-Type-Options, and Referrer-Policy were absent on the live WordPress response.",
+          "recommendation": "Add and test modern security headers without overstating their SEO impact."
+        }
+      ]
+    },
+    {
+      "name": "Content Quality",
+      "score": 42,
+      "what_works": [
+        "Founder and sourcing story are present",
+        "Contact information and legal policies are published",
+        "Products have unique basic descriptions"
+      ],
+      "findings": [
+        {
+          "title": "Homepage contains visible placeholder copy",
+          "severity": "High",
+          "description": "Lorem Ipsum and an irrelevant recipe CTA appear in primary homepage content.",
+          "recommendation": "Replace unfinished copy with query-aligned brand and product information."
+        },
+        {
+          "title": "Health and function claims lack visible evidence",
+          "severity": "High",
+          "description": "Immune, gut-health, and glycemic claims do not show studies, doses, or qualified sources.",
+          "recommendation": "Obtain compliance review and cite evidence or soften/remove unsupported claims."
+        },
+        {
+          "title": "Product and category content is shallow",
+          "severity": "High",
+          "description": "Priority pages omit ingredients, nutrition, preparation, shelf life, manufacturer/FSSAI details, logistics, and selection guidance.",
+          "recommendation": "Add complete, unique purchase-supporting content and internal links."
+        }
+      ]
+    },
+    {
+      "name": "On-Page SEO",
+      "score": 39,
+      "what_works": [
+        "Product pages have a single product H1",
+        "Breadcrumb navigation exists on product pages",
+        "Commercial page types broadly match search intent"
+      ],
+      "findings": [
+        {
+          "title": "Homepage has three H1 elements and no meta description",
+          "severity": "High",
+          "description": "The title is only Bean Leaf Brew and the heading hierarchy is fragmented.",
+          "recommendation": "Use one descriptive H1 and unique, query-aligned title and description."
+        },
+        {
+          "title": "Product metadata is generic or excessively long",
+          "severity": "High",
+          "description": "Titles omit product attributes and sample product descriptions are 430-472 characters.",
+          "recommendation": "Use product/category metadata templates and concise benefit-led descriptions."
+        },
+        {
+          "title": "Editorial internal linking is weak",
+          "severity": "Medium",
+          "description": "The site lacks a guide hub connecting education content with categories and products.",
+          "recommendation": "Publish high-intent guides and link them bidirectionally."
+        }
+      ]
+    },
+    {
+      "name": "Schema / Structured Data",
+      "score": 42,
+      "what_works": [
+        "Product and BreadcrumbList JSON-LD is server-rendered on product pages",
+        "Core product name, image, description, seller, and offer information is present"
+      ],
+      "findings": [
+        {
+          "title": "Spam review contaminates Product rating",
+          "severity": "High",
+          "description": "An unrelated link-spam review is included in Morning Buzz review JSON-LD and aggregateRating.",
+          "recommendation": "Remove it, recalculate the rating, and moderate schema-bound reviews."
+        },
+        {
+          "title": "Variant and offer data does not match visible products",
+          "severity": "High",
+          "description": "AggregateOffer offerCount is 18 while only two weights are visibly purchasable; SKU and breadcrumb values are also inconsistent.",
+          "recommendation": "Model real variants and align every schema value with visible content."
+        },
+        {
+          "title": "Homepage entity graph is missing",
+          "severity": "High",
+          "description": "Homepage and About page contained no JSON-LD blocks.",
+          "recommendation": "Add linked Organization, WebSite, WebPage, founder, and truthful location entities."
+        }
+      ]
+    },
+    {
+      "name": "Performance",
+      "score": 81,
+      "what_works": [
+        "CLS was 0 in mobile Lighthouse",
+        "Total Blocking Time was 170 ms",
+        "Primary content is server-rendered"
+      ],
+      "findings": [
+        {
+          "title": "Homepage payload is about 65 MB",
+          "severity": "High",
+          "description": "Five MP4 files total about 58.9 MB; Speed Index was 16.9 seconds.",
+          "recommendation": "Use poster-first delivery, one optimized hero loop at most, and load secondary video only on interaction."
+        },
+        {
+          "title": "LCP misses the recommended threshold",
+          "severity": "Medium",
+          "description": "Mobile Lighthouse LCP was 2.9 seconds; no field data was available.",
+          "recommendation": "Optimize the LCP asset and validate with 28 days of CrUX field data."
+        }
+      ]
+    },
+    {
+      "name": "AI Search Readiness",
+      "score": 59,
+      "what_works": [
+        "Search-focused AI crawlers are not specifically blocked",
+        "Primary content is available in raw HTML",
+        "Products have basic structured data"
+      ],
+      "findings": [
+        {
+          "title": "Content is not consistently citable",
+          "severity": "High",
+          "description": "Placeholder copy, generic marketing language, unsupported claims, and incomplete product facts reduce passage quality.",
+          "recommendation": "Publish concise answer-first product facts and evidence-led guides with primary-source citations."
+        },
+        {
+          "title": "llms.txt is absent",
+          "severity": "Info",
+          "description": "The endpoint returns 404, but this is not a Google visibility lever.",
+          "recommendation": "Do not prioritize llms.txt ahead of core content, schema, performance, and entity work."
+        }
+      ]
+    },
+    {
+      "name": "Images",
+      "score": 38,
+      "what_works": [
+        "Many below-fold images use native lazy loading",
+        "Some WebP assets are present"
+      ],
+      "findings": [
+        {
+          "title": "Empty alt text is widespread",
+          "severity": "Medium",
+          "description": "31 of 53 homepage images and 18 of 22 House Brew images use empty alt attributes; some may be decorative but require review.",
+          "recommendation": "Add accurate alt to informative images and retain empty alt only for decorative assets."
+        },
+        {
+          "title": "Large PNG files and priority hints are inefficient",
+          "severity": "Medium",
+          "description": "Key PNGs range from about 275 KB to 810 KB, and the logo is prioritized instead of the likely LCP asset.",
+          "recommendation": "Serve responsive AVIF/WebP and prioritize the actual LCP image."
+        }
+      ]
+    }
+  ],
+  "action_plan": {
+    "phases": [
+      {
+        "name": "Phase 1: Critical Fixes",
+        "timeframe": "Week 1",
+        "items": [
+          "Remove spam review and recalculate ratings",
+          "Replace homepage placeholder content and heading structure",
+          "Review unsupported health claims",
+          "Clean XML sitemaps and noindex/delete junk URLs",
+          "Add homepage metadata and canonicals"
+        ]
+      },
+      {
+        "name": "Phase 2: High-Impact Improvements",
+        "timeframe": "Weeks 2-3",
+        "items": [
+          "Cut homepage video payload",
+          "Optimize responsive images",
+          "Repair Product/Offer/variant schema",
+          "Add Organization entity graph",
+          "Expand product and category buying content"
+        ]
+      },
+      {
+        "name": "Phase 3: Content & Authority",
+        "timeframe": "Month 2",
+        "items": [
+          "Publish founder, roastery, estate, and sourcing proof",
+          "Normalize NAP and location entities",
+          "Publish high-intent brewing and selection guides",
+          "Implement verified reviews and Merchant Center"
+        ]
+      },
+      {
+        "name": "Phase 4: Monitoring & Iteration",
+        "timeframe": "Ongoing",
+        "items": [
+          "Track Search Console coverage and query performance",
+          "Monitor CrUX field CWV",
+          "Track rich-result and Merchant Center errors",
+          "Measure organic conversion and revenue"
+        ]
+      }
+    ]
+  },
+  "artifacts": {
+    "full_report": "FULL-AUDIT-REPORT.md",
+    "action_plan": "ACTION-PLAN.md",
+    "keyword_report": "KEYWORD-RANKING-SNAPSHOT.md",
+    "keyword_csv": "keyword-ranking-snapshot.csv",
+    "findings_dir": "findings/",
+    "screenshots_dir": null
+  }
+}

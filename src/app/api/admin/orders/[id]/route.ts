@@ -5,6 +5,7 @@ import { db } from "@/db/client";
 import { orders, orderItems, orderNotes } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { esc } from "@/lib/htmlEscape";
+import { enqueueBackgroundJob } from "@/lib/backgroundJobs";
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const unauth = await requireAdmin();
@@ -40,29 +41,33 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     await db.update(orders).set(updates).where(eq(orders.id, id));
 
     if (status === "shipped" && order.status !== "shipped") {
-      const items = await db.select().from(orderItems).where(eq(orderItems.orderId, id));
-      const customerNotes = await db.select().from(orderNotes).where(eq(orderNotes.orderId, id));
+      const [items, customerNotes] = await Promise.all([
+        db.select().from(orderItems).where(eq(orderItems.orderId, id)),
+        db.select().from(orderNotes).where(eq(orderNotes.orderId, id)),
+      ]);
       const visibleNotes = customerNotes.filter((n) => n.type === "customer");
 
-      sendDispatchEmail({
-        order: {
-          id: order.id,
-          paymentId: order.paymentId,
-          customerName: order.customerName,
-          customerEmail: order.customerEmail,
-          customerPhone: order.customerPhone,
-          address: order.address,
-          city: order.city,
-          state: order.state,
-          pincode: order.pincode,
-          total: order.total,
-          trackingRef: (trackingRef !== undefined ? trackingRef : order.trackingRef) || null,
-          trackingVendor: (trackingVendor !== undefined ? trackingVendor : order.trackingVendor) || null,
-        },
-        items,
-        customerNotes: visibleNotes.map((n) => n.note),
-        newNote: noteType === "customer" && note?.trim() ? note.trim() : null,
-      }).catch((err) => console.error("Dispatch email failed:", err));
+      enqueueBackgroundJob("dispatch-email", () =>
+        sendDispatchEmail({
+          order: {
+            id: order.id,
+            paymentId: order.paymentId,
+            customerName: order.customerName,
+            customerEmail: order.customerEmail,
+            customerPhone: order.customerPhone,
+            address: order.address,
+            city: order.city,
+            state: order.state,
+            pincode: order.pincode,
+            total: order.total,
+            trackingRef: (trackingRef !== undefined ? trackingRef : order.trackingRef) || null,
+            trackingVendor: (trackingVendor !== undefined ? trackingVendor : order.trackingVendor) || null,
+          },
+          items,
+          customerNotes: visibleNotes.map((n) => n.note),
+          newNote: noteType === "customer" && note?.trim() ? note.trim() : null,
+        })
+      );
     }
   }
 

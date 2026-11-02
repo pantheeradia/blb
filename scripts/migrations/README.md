@@ -40,3 +40,4 @@ turso db shell <db-name> < scripts/migrations/001-add-product-visible.sql
 | 002 | `002-add-ground-coffee-options.sql` | Add `weight_options` + `brewing_equipment_options` to `products`, and `selected_weight` + `brewing_equipment` to `order_items` (ground coffee variant selection) |
 | 003 | `003-add-instant-premix-options.sql` | Add `options` to `products` (instant premix product type and variant configs) |
 | 005 | `005-seed-instant-premix-products.sql` | Seed 13 Instant Premix product variants (uses INSERT OR REPLACE for idempotency) |
+| 006 | `006-add-query-indexes.sql` | Add composite indexes for common order/product filters and pending-order cleanup |

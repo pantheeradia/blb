@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CATEGORIES, getCategory } from "@/lib/categories";
@@ -225,17 +225,6 @@ function ProductModal({
   // Instant premix options are only configurable for instant premix category.
   const isInstantPremix = form.category === INSTANT_PREMIX_CATEGORY;
 
-  // Reset instant premix data when category changes away from instant-premix
-  useEffect(() => {
-    if (!isInstantPremix && (form.instantPremixProductType !== null || form.instantPremixVariants.length > 0)) {
-      setForm((f) => ({
-        ...f,
-        instantPremixProductType: null,
-        instantPremixVariants: [],
-      }));
-    }
-  }, [isInstantPremix, form.instantPremixProductType, form.instantPremixVariants.length]);
-
   function addWeightRow() {
     setForm((f) => ({ ...f, weightOptions: [...f.weightOptions, { label: "", price: "" }] }));
   }
@@ -295,6 +284,10 @@ function ProductModal({
     setForm((f) => {
       const next = { ...f, [field]: value };
       if (field === "name" && !editId) next.slug = slugify(value as string);
+      if (field === "category" && value !== INSTANT_PREMIX_CATEGORY) {
+        next.instantPremixProductType = null;
+        next.instantPremixVariants = [];
+      }
       return next;
     });
   }
@@ -655,21 +648,31 @@ export function DeleteProductButton({ id, name }: { id: number; name: string }) 
 export function ToggleStockButton({ id, inStock }: { id: number; inStock: boolean }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [optimisticInStock, setOptimisticInStock] = useState(inStock);
 
   async function toggle() {
+    if (loading) return;
+    const nextValue = !optimisticInStock;
+    setOptimisticInStock(nextValue);
     setLoading(true);
-    await fetch(`/api/admin/products/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ inStock: !inStock }),
-    });
-    router.refresh();
-    setLoading(false);
+    try {
+      const response = await fetch(`/api/admin/products/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ inStock: nextValue }),
+      });
+      if (!response.ok) throw new Error("Stock update failed");
+      router.refresh();
+    } catch {
+      setOptimisticInStock(!nextValue);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
-    <button onClick={toggle} disabled={loading} className={`text-xs px-2 py-0.5 rounded font-medium transition-opacity disabled:opacity-50 ${inStock ? "bg-green-900 text-green-300 hover:bg-green-800" : "bg-red-900 text-red-300 hover:bg-red-800"}`}>
-      {loading ? "..." : inStock ? "In Stock" : "Out of Stock"}
+    <button onClick={toggle} disabled={loading} aria-busy={loading} className={`text-xs px-2 py-0.5 rounded font-medium transition-opacity disabled:opacity-70 ${optimisticInStock ? "bg-green-900 text-green-300 hover:bg-green-800" : "bg-red-900 text-red-300 hover:bg-red-800"}`}>
+      {optimisticInStock ? "In Stock" : "Out of Stock"}
     </button>
   );
 }
@@ -679,21 +682,31 @@ export function ToggleStockButton({ id, inStock }: { id: number; inStock: boolea
 export function ToggleVisibilityButton({ id, visible }: { id: number; visible: boolean }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [optimisticVisible, setOptimisticVisible] = useState(visible);
 
   async function toggle() {
+    if (loading) return;
+    const nextValue = !optimisticVisible;
+    setOptimisticVisible(nextValue);
     setLoading(true);
-    await fetch(`/api/admin/products/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ visible: !visible }),
-    });
-    router.refresh();
-    setLoading(false);
+    try {
+      const response = await fetch(`/api/admin/products/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ visible: nextValue }),
+      });
+      if (!response.ok) throw new Error("Visibility update failed");
+      router.refresh();
+    } catch {
+      setOptimisticVisible(!nextValue);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
-    <button onClick={toggle} disabled={loading} className={`text-xs px-2 py-0.5 rounded font-medium transition-opacity disabled:opacity-50 ${visible ? "bg-sky-900 text-sky-300 hover:bg-sky-800" : "bg-gray-700 text-gray-400 hover:bg-gray-600"}`}>
-      {loading ? "..." : visible ? "Shown" : "Hidden"}
+    <button onClick={toggle} disabled={loading} aria-busy={loading} className={`text-xs px-2 py-0.5 rounded font-medium transition-opacity disabled:opacity-70 ${optimisticVisible ? "bg-sky-900 text-sky-300 hover:bg-sky-800" : "bg-gray-700 text-gray-400 hover:bg-gray-600"}`}>
+      {optimisticVisible ? "Shown" : "Hidden"}
     </button>
   );
 }

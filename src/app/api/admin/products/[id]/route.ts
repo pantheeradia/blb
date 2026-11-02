@@ -70,7 +70,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     let statusCode = 500;
 
     if (error && typeof error === "object" && "cause" in error) {
-      const cause = error.cause as any;
+      const cause = error.cause as { code?: string; message?: string } | undefined;
       if (cause?.code === "SQLITE_CONSTRAINT") {
         if (cause.message?.includes("UNIQUE constraint failed: products.slug")) {
           errorMessage = "A product with this slug already exists. Please use a different slug.";

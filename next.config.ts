@@ -10,8 +10,9 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   images: {
-    formats: ["image/avif", "image/webp"],
-    qualities: [100],
+    formats: ["image/webp"],
+    qualities: [75, 85],
+    minimumCacheTTL: 2_592_000,
     remotePatterns: [
       {
         protocol: "https",

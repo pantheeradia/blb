@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { isValidSession } from "@/app/api/admin/login/route";
+import { isValidSession } from "@/lib/adminSession";
 
 export async function requireAdmin(): Promise<NextResponse | null> {
   const cookieStore = await cookies();

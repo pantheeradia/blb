@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ArrowDownUp, ChevronDown, ChevronLeft, ChevronRight, Search, X } from "lucide-react";
 import { type Product } from "@/types";
@@ -100,6 +100,17 @@ function groupPrice(group: ProductGroup): number {
   return Math.min(...group.variants.map((variant) => variant.sellingPrice));
 }
 
+function useDebouncedValue<T>(value: T, delayMs: number): T {
+  const [debounced, setDebounced] = useState(value);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setDebounced(value), delayMs);
+    return () => window.clearTimeout(timer);
+  }, [delayMs, value]);
+
+  return debounced;
+}
+
 export function ShopClient({ products }: Props) {
   const searchParams = useSearchParams();
 
@@ -137,6 +148,12 @@ export function ShopClient({ products }: Props) {
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<SortValue>("featured");
   const [page, setPage] = useState(1);
+  const debouncedQuery = useDebouncedValue(query, 200);
+
+  const searchSuggestions = useMemo(
+    () => Array.from(new Set(products.map((product) => product.name))).slice(0, 12),
+    [products]
+  );
 
   const categoryProducts = useMemo(() => {
     if (active === "all") return products;
@@ -144,7 +161,7 @@ export function ShopClient({ products }: Props) {
   }, [active, products]);
 
   const filteredProducts = useMemo(() => {
-    const normalizedQuery = query.trim().toLocaleLowerCase();
+    const normalizedQuery = debouncedQuery.trim().toLocaleLowerCase();
     if (!normalizedQuery) return categoryProducts;
 
     return categoryProducts.filter((product) =>
@@ -164,7 +181,7 @@ export function ShopClient({ products }: Props) {
         .filter((value): value is string => Boolean(value))
         .some((value) => value.toLocaleLowerCase().includes(normalizedQuery))
     );
-  }, [categoryProducts, query]);
+  }, [categoryProducts, debouncedQuery]);
 
   const sortedProducts = useMemo(() => {
     const result = [...filteredProducts];
@@ -183,7 +200,7 @@ export function ShopClient({ products }: Props) {
   }, [sort, sortedProducts]);
 
   const isCategoryEmpty = categoryProducts.length === 0;
-  const isSearchEmpty = sortedProducts.length === 0 && query.trim().length > 0;
+  const isSearchEmpty = sortedProducts.length === 0 && debouncedQuery.trim().length > 0;
   const totalItems = active === "instant-premix" ? instantPremixGroups.length : sortedProducts.length;
   const totalPages = Math.ceil(totalItems / PAGE_SIZE);
   const currentPage = Math.min(page, Math.max(totalPages, 1));
@@ -245,6 +262,8 @@ export function ShopClient({ products }: Props) {
               <input
                 id="shop-search"
                 type="search"
+                list="shop-search-suggestions"
+                autoComplete="off"
                 value={query}
                 onChange={(event) => {
                   setQuery(event.target.value);
@@ -253,6 +272,11 @@ export function ShopClient({ products }: Props) {
                 placeholder="Coffee, roast, tasting note..."
                 className="w-full bg-transparent px-3 py-4 text-sm text-[#27150e] outline-none placeholder:text-[#887260]/65"
               />
+              <datalist id="shop-search-suggestions">
+                {searchSuggestions.map((suggestion) => (
+                  <option key={suggestion} value={suggestion} />
+                ))}
+              </datalist>
               {query && (
                 <button
                   type="button"
@@ -352,14 +376,14 @@ export function ShopClient({ products }: Props) {
             </div>
           ) : active === "instant-premix" ? (
             <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
-              {visibleGroups.map((group, index) => (
-                <ProductGroupCard key={group.groupKey} group={group} priority={index < 3 && currentPage === 1} />
+              {visibleGroups.map((group) => (
+                <ProductGroupCard key={group.groupKey} group={group} priority={false} />
               ))}
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
-              {visibleProducts.map((product, index) => (
-                <ProductCard key={product.id} product={product} priority={index < 3 && currentPage === 1} />
+              {visibleProducts.map((product) => (
+                <ProductCard key={product.id} product={product} priority={false} />
               ))}
             </div>
           )}

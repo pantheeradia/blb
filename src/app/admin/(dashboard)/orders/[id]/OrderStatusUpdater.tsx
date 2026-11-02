@@ -5,14 +5,6 @@ import { useRouter } from "next/navigation";
 
 const STATUSES = ["pending", "processing", "shipped", "delivered", "cancelled"] as const;
 
-const statusColor: Record<string, string> = {
-  processing: "bg-yellow-900 text-yellow-300",
-  shipped: "bg-blue-900 text-blue-300",
-  delivered: "bg-green-900 text-green-300",
-  cancelled: "bg-red-900 text-red-300",
-  pending: "bg-gray-800 text-gray-300",
-};
-
 const NEXT_STATUS: Record<string, { key: string; label: string }> = {
   pending:    { key: "processing", label: "Move to Processing" },
   processing: { key: "shipped",    label: "Mark as Shipped" },
@@ -32,6 +24,7 @@ export function OrderStatusUpdater({ orderId, currentStatus, currentTrackingRef,
   const [trackingVendor, setTrackingVendor] = useState(currentTrackingVendor ?? "");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState("");
   // when true, the "Mark as Shipped" prompt is open
   const [shippingPrompt, setShippingPrompt] = useState(false);
   const [promptRef, setPromptRef] = useState("");
@@ -45,25 +38,41 @@ export function OrderStatusUpdater({ orderId, currentStatus, currentTrackingRef,
     trackingVendor !== (currentTrackingVendor ?? "");
 
   async function save(overrides?: { status?: string; trackingRef?: string; trackingVendor?: string }) {
+    if (saving) return;
+    const previous = { status, trackingRef, trackingVendor };
     setSaving(true);
+    setSaveError("");
     const nextStatus = overrides?.status ?? status;
-    await fetch(`/api/admin/orders/${orderId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        status: nextStatus,
-        trackingRef: (overrides?.trackingRef ?? trackingRef).trim() || null,
-        trackingVendor: (overrides?.trackingVendor ?? trackingVendor).trim() || null,
-      }),
-    });
-    if (overrides?.status) setStatus(overrides.status);
-    if (overrides?.trackingRef !== undefined) setTrackingRef(overrides.trackingRef);
-    if (overrides?.trackingVendor !== undefined) setTrackingVendor(overrides.trackingVendor);
-    setSaving(false);
-    setSaved(true);
-    setShippingPrompt(false);
-    setTimeout(() => setSaved(false), 2000);
-    router.refresh();
+    const nextTrackingRef = overrides?.trackingRef ?? trackingRef;
+    const nextTrackingVendor = overrides?.trackingVendor ?? trackingVendor;
+
+    setStatus(nextStatus);
+    setTrackingRef(nextTrackingRef);
+    setTrackingVendor(nextTrackingVendor);
+
+    try {
+      const response = await fetch(`/api/admin/orders/${orderId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          status: nextStatus,
+          trackingRef: nextTrackingRef.trim() || null,
+          trackingVendor: nextTrackingVendor.trim() || null,
+        }),
+      });
+      if (!response.ok) throw new Error("Update failed");
+      setSaved(true);
+      setShippingPrompt(false);
+      setTimeout(() => setSaved(false), 2000);
+      router.refresh();
+    } catch {
+      setStatus(previous.status);
+      setTrackingRef(previous.trackingRef);
+      setTrackingVendor(previous.trackingVendor);
+      setSaveError("Could not save the update. Your previous values were restored.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   const suggestion = NEXT_STATUS[currentStatus];
@@ -192,6 +201,7 @@ export function OrderStatusUpdater({ orderId, currentStatus, currentTrackingRef,
           </div>
         </div>
       )}
+      {saveError && <p className="text-red-400 text-xs" role="alert">{saveError}</p>}
     </div>
   );
 }

@@ -31,11 +31,19 @@ export async function createOrderFromPending(
   razorpayPaymentId: string,
   customer: CustomerData,
   attribution?: AttributionData | null
-): Promise<{ success: true; orderNumber: string } | { success: false; error: string }> {
+): Promise<{ success: true; orderNumber: string; created: boolean } | { success: false; error: string }> {
   // Check if already processed (idempotent)
-  const existing = await db.select({ id: orders.id }).from(orders).where(eq(orders.id, razorpayOrderId)).limit(1);
+  const existing = await db
+    .select({ id: orders.id, orderNumber: orders.orderNumber })
+    .from(orders)
+    .where(eq(orders.id, razorpayOrderId))
+    .limit(1);
   if (existing.length > 0) {
-    return { success: true, orderNumber: existing[0].id };
+    return {
+      success: true,
+      orderNumber: existing[0].orderNumber ?? existing[0].id,
+      created: false,
+    };
   }
 
   const [pending] = await db.select().from(pendingOrders).where(eq(pendingOrders.id, razorpayOrderId)).limit(1);
@@ -174,5 +182,5 @@ export async function createOrderFromPending(
 
   await db.delete(pendingOrders).where(eq(pendingOrders.id, razorpayOrderId));
 
-  return { success: true, orderNumber };
+  return { success: true, orderNumber, created: true };
 }

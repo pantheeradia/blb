@@ -7,6 +7,7 @@ import { esc } from "@/lib/htmlEscape";
 import { generateOrderNumber } from "@/lib/orderNumber";
 import { resolveLineOptions } from "@/lib/productOptions";
 import { INSTANT_PREMIX_CATEGORY, parseInstantPremixOptions } from "@/lib/instantPremixOptions";
+import { enqueueBackgroundJob } from "@/lib/backgroundJobs";
 
 export async function POST(req: NextRequest) {
   try {
@@ -197,8 +198,9 @@ export async function POST(req: NextRequest) {
         .where(eq(coupons.code, validatedCouponCode));
     }
 
-    sendOrderConfirmation({ customer, lineItems, orderId, orderNumber, paymentId, discount })
-      .catch((err) => console.error("Order confirmation email failed (order saved):", err));
+    enqueueBackgroundJob("free-order-confirmation-email", () =>
+      sendOrderConfirmation({ customer, lineItems, orderId, orderNumber, paymentId, discount })
+    );
 
     return NextResponse.json({ success: true });
   } catch (error) {

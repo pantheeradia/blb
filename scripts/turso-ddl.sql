@@ -31,6 +31,7 @@ CREATE INDEX IF NOT EXISTS idx_orders_created_at ON orders (created_at);
 CREATE INDEX IF NOT EXISTS idx_orders_status ON orders (status);
 CREATE INDEX IF NOT EXISTS idx_orders_invoice_number ON orders (invoice_number);
 CREATE INDEX IF NOT EXISTS idx_orders_order_number ON orders (order_number);
+CREATE INDEX IF NOT EXISTS idx_orders_status_created_at ON orders (status, created_at);
 
 CREATE TABLE IF NOT EXISTS order_items (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -104,6 +105,8 @@ CREATE TABLE IF NOT EXISTS products (
 
 CREATE INDEX IF NOT EXISTS idx_products_category ON products (category);
 CREATE INDEX IF NOT EXISTS idx_products_featured ON products (featured);
+CREATE INDEX IF NOT EXISTS idx_products_visible_category ON products (visible, category);
+CREATE INDEX IF NOT EXISTS idx_products_visible_featured ON products (visible, featured);
 
 CREATE TABLE IF NOT EXISTS order_notes (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -130,6 +133,8 @@ CREATE TABLE IF NOT EXISTS pending_orders (
   items_json TEXT NOT NULL,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
+
+CREATE INDEX IF NOT EXISTS idx_pending_orders_created_at ON pending_orders (created_at);
 
 CREATE TABLE IF NOT EXISTS admin_users (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
