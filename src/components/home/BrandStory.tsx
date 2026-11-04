@@ -9,7 +9,7 @@ export function BrandStory() {
           <div className="reveal-on-scroll relative">
             <div className="relative h-96 overflow-hidden md:h-[480px]">
               <Image
-                src="/images/Hero-Image.webp"
+                src="/images/hero-image.jpeg"
                 alt="Bean Leaf Brew barista"
                 fill
                 className="object-cover"

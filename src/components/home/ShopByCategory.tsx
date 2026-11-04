@@ -6,7 +6,7 @@ import { getProductBySlug } from "@/lib/products";
 // Map categories to representative product slugs
 const CATEGORY_PRODUCTS = {
   "ground-coffee": "house-brew", // South Indian Filter Coffee
-  "instant-premix": "rich-blend-instant-premix",
+  "instant-premix": "black-tea-strawberry", // Representative instant premix
   "whole-bean": "whole-bean-morning-buzz", // Morning Buzz
 } as const;
 
