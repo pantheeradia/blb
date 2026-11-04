@@ -50,7 +50,7 @@ export function Nav() {
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
           <Link href="/" className="flex-shrink-0 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#C9953C]">
             <Image
-              src="/images/BeanLeaf-Logo.png"
+              src="/images/logo.png"
               alt="Bean Leaf Brew"
               width={160}
               height={48}
