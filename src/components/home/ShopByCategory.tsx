@@ -1,32 +1,46 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
+import { getProductBySlug } from "@/lib/products";
 
-const categories = [
-  {
-    title: "Ground coffee",
-    description: "Choose the grind. Keep the ritual.",
-    href: "/shop?category=ground-coffee",
-    image: "/images/GC_Beans_01.webp",
-    className: "min-h-[520px] lg:row-span-2",
-  },
-  {
-    title: "Instant premixes",
-    description: "A proper cup in under a minute.",
-    href: "/shop?category=instant-premix",
-    image: "/images/DSC5479.webp",
-    className: "min-h-[300px]",
-  },
-  {
-    title: "Whole bean",
-    description: "Roasted fresh for your grinder.",
-    href: "/shop?category=whole-bean",
-    image: "/images/DB_Beans_01.webp",
-    className: "min-h-[300px]",
-  },
-];
+// Map categories to representative product slugs
+const CATEGORY_PRODUCTS = {
+  "ground-coffee": "house-brew", // South Indian Filter Coffee
+  "instant-premix": "rich-blend-instant-premix",
+  "whole-bean": "whole-bean-morning-buzz", // Morning Buzz
+} as const;
 
-export function ShopByCategory() {
+export async function ShopByCategory() {
+  // Fetch the representative products to get their images
+  const [groundCoffeeProduct, instantPremixProduct, wholeBeanProduct] = await Promise.all([
+    getProductBySlug(CATEGORY_PRODUCTS["ground-coffee"]),
+    getProductBySlug(CATEGORY_PRODUCTS["instant-premix"]),
+    getProductBySlug(CATEGORY_PRODUCTS["whole-bean"]),
+  ]);
+
+  const categories = [
+    {
+      title: "Ground coffee",
+      description: "Choose the grind. Keep the ritual.",
+      href: "/shop?category=ground-coffee",
+      image: groundCoffeeProduct?.images[0] ?? "/images/2-3.webp",
+      className: "min-h-[520px] lg:row-span-2",
+    },
+    {
+      title: "Instant premixes",
+      description: "A proper cup in under a minute.",
+      href: "/shop?category=instant-premix",
+      image: instantPremixProduct?.images[0] ?? "/images/DSC5479.webp",
+      className: "min-h-[300px]",
+    },
+    {
+      title: "Whole bean",
+      description: "Roasted fresh for your grinder.",
+      href: "/shop?category=whole-bean",
+      image: wholeBeanProduct?.images[0] ?? "/images/3-3.webp",
+      className: "min-h-[300px]",
+    },
+  ];
   return (
     <section className="bg-[#f7f0e6] py-20 sm:py-28">
       <div className="mx-auto max-w-7xl px-6">
