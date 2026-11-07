@@ -11,11 +11,18 @@ import { PartnerMarquee } from "@/components/home/PartnerMarquee";
 import { ValueStrip } from "@/components/home/ValueStrip";
 import { ShopByCategory } from "@/components/home/ShopByCategory";
 import { getFeaturedProducts, getProductsByCategory } from "@/lib/products";
+import type { Product } from "@/types";
+
+function firstProductImage(products: Product[]): string | undefined {
+  return products.flatMap((product) => product.images).find(Boolean);
+}
 
 export default async function HomePage() {
-  const [featured, premixes] = await Promise.all([
+  const [featured, groundCoffee, premixes, wholeBean] = await Promise.all([
     getFeaturedProducts().catch(() => []),
+    getProductsByCategory("ground-coffee").catch(() => []),
     getProductsByCategory("instant-premix").catch(() => []),
+    getProductsByCategory("whole-bean").catch(() => []),
   ]);
 
   return (
@@ -25,7 +32,13 @@ export default async function HomePage() {
       <main data-gentle-motion>
         <Hero />
         <ValueStrip />
-        <ShopByCategory />
+        <ShopByCategory
+          categoryImages={{
+            "ground-coffee": firstProductImage(groundCoffee),
+            "instant-premix": firstProductImage(premixes),
+            "whole-bean": firstProductImage(wholeBean),
+          }}
+        />
         <FeaturedProducts products={featured} />
         <BrandStory />
         <PremixStrip products={premixes} />

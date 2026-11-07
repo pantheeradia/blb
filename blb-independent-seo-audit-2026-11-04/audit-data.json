@@ -1,0 +1,237 @@
+{
+  "summary": {
+    "health_score": 43,
+    "business_type": "Direct-to-consumer coffee and beverage ecommerce with Bengaluru production/local-business presence",
+    "top_findings": [
+      "Critical public debug endpoint exposes production payment/database information and writes to the database",
+      "robots.txt and sitemap.xml return 404",
+      "Canonical URLs are absent across measured public pages and products",
+      "Shop product discovery and pagination depend on client JavaScript",
+      "No structured data is implemented"
+    ],
+    "quick_wins": [
+      "Noindex checkout, success, admin login, and admin reset",
+      "Add metadataBase and self-referencing canonicals",
+      "Generate robots.txt and a complete XML sitemap",
+      "Add Product, Offer, Breadcrumb, and Organization structured data",
+      "Add accurate images to the nine image-less products"
+    ]
+  },
+  "categories": [
+    {
+      "name": "Technical SEO",
+      "score": 43,
+      "what_works": [
+        "HTTPS and HSTS are present",
+        "Clean descriptive URLs",
+        "Real 404 responses include noindex",
+        "Primary public content is server-rendered"
+      ],
+      "findings": [
+        {
+          "title": "Public debug endpoint exposes production data",
+          "severity": "Critical",
+          "description": "The public diagnostic endpoint emits secret-derived payment data, database URL and pending-order information, and performs a database write on GET.",
+          "recommendation": "Remove or authenticate the endpoint, rotate the Razorpay secret, review logs, and remove all sensitive output/write behavior."
+        },
+        {
+          "title": "Robots and sitemap files are missing",
+          "severity": "High",
+          "description": "Both /robots.txt and /sitemap.xml return 404.",
+          "recommendation": "Add Next.js robots.ts and sitemap.ts using the chosen production hostname."
+        },
+        {
+          "title": "Catalog discovery depends on JavaScript",
+          "severity": "High",
+          "description": "Raw shop HTML exposes no product-detail anchors and pagination is button-only client state.",
+          "recommendation": "Server-render product anchors and implement URL-based crawlable pagination."
+        },
+        {
+          "title": "Utility and authentication pages are indexable",
+          "severity": "High",
+          "description": "Checkout, success, admin login and reset have no noindex control.",
+          "recommendation": "Add noindex, nofollow and exclude these URLs from the sitemap."
+        }
+      ]
+    },
+    {
+      "name": "Content Quality",
+      "score": 52,
+      "what_works": [
+        "Clear brand, location and sourcing proposition",
+        "Useful address, phone, email and hours",
+        "Distinctive shop language"
+      ],
+      "findings": [
+        {
+          "title": "Product content is thin",
+          "severity": "High",
+          "description": "23 of 24 product descriptions are under 100 words and 16 are under 50 words.",
+          "recommendation": "Add truthful structured sections for ingredients, preparation, pack/servings, storage, allergens/diet, source, delivery/returns and product-specific questions."
+        },
+        {
+          "title": "Claims need substantiation",
+          "severity": "High",
+          "description": "Health, nutrition, sourcing, traceability and freshness claims are not visibly supported.",
+          "recommendation": "Create a claim register and surface verifiable supporting evidence."
+        },
+        {
+          "title": "Core ecommerce policies are missing",
+          "severity": "Medium",
+          "description": "No visible privacy, terms, shipping, returns/refund, payment or cancellation routes are linked.",
+          "recommendation": "Publish and link complete customer policy pages."
+        }
+      ]
+    },
+    {
+      "name": "On-Page SEO",
+      "score": 48,
+      "what_works": [
+        "One H1 on measured public pages",
+        "Unique product titles",
+        "Descriptive product slugs"
+      ],
+      "findings": [
+        {
+          "title": "Canonical URLs are missing",
+          "severity": "High",
+          "description": "No measured public or product page emits a canonical link.",
+          "recommendation": "Add metadataBase and correct self-referencing canonicals; consolidate parameter variants."
+        },
+        {
+          "title": "Social metadata is absent",
+          "severity": "Medium",
+          "description": "Open Graph and Twitter metadata are not defined.",
+          "recommendation": "Add page-specific social titles, descriptions, URLs and 1200x630 images."
+        },
+        {
+          "title": "Near-duplicate product families",
+          "severity": "High",
+          "description": "Four product pairs target substantially overlapping intent.",
+          "recommendation": "Consolidate and redirect or clearly differentiate product identity and content."
+        }
+      ]
+    },
+    {
+      "name": "Schema / Structured Data",
+      "score": 5,
+      "what_works": [],
+      "findings": [
+        {
+          "title": "No structured data",
+          "severity": "High",
+          "description": "No JSON-LD, Microdata or RDFa was found on public templates.",
+          "recommendation": "Add validated Organization/LocalBusiness, WebSite, Product, Offer and BreadcrumbList JSON-LD."
+        }
+      ]
+    },
+    {
+      "name": "Performance",
+      "score": 40,
+      "what_works": [
+        "next/image and responsive sizes are used",
+        "Modern image formats are configured",
+        "Webpack production build completes successfully"
+      ],
+      "findings": [
+        {
+          "title": "Large hero media",
+          "severity": "Medium",
+          "description": "The hero poster is about 976 KB and hero video about 14.2 MB; several source images are 2-2.7 MB.",
+          "recommendation": "Resize the poster, compress/shorten video, ship mobile-aware variants, and collect real-user CWV."
+        },
+        {
+          "title": "Field Core Web Vitals unavailable",
+          "severity": "Info",
+          "description": "PageSpeed quota returned HTTP 429 and no CrUX/GSC access was available.",
+          "recommendation": "Collect 75th-percentile LCP, INP and CLS after deployment."
+        }
+      ]
+    },
+    {
+      "name": "AI Search Readiness",
+      "score": 45,
+      "what_works": [
+        "Specific entity, location and product facts exist",
+        "First-party sourcing and brand story content exists"
+      ],
+      "findings": [
+        {
+          "title": "Facts lack machine-readable structure and evidence",
+          "severity": "High",
+          "description": "Thin product explanations, absent schema, unsupported claims and limited named expertise reduce citability.",
+          "recommendation": "Use answer-first content, consistent entity data, evidence-backed claims, named expertise and validated schema."
+        }
+      ]
+    },
+    {
+      "name": "Images",
+      "score": 58,
+      "what_works": [
+        "Public image components include alt attributes",
+        "next/image and responsive sizes are used"
+      ],
+      "findings": [
+        {
+          "title": "Nine visible products have no image",
+          "severity": "High",
+          "description": "Nine of 24 visible catalog products have empty image arrays.",
+          "recommendation": "Add at least one accurate original image before indexing each sellable product."
+        },
+        {
+          "title": "Large and duplicate source assets",
+          "severity": "Medium",
+          "description": "Multiple checked remote/local sources exceed 500 KB and the repository contains duplicate/oversized assets.",
+          "recommendation": "Preprocess uploads, enforce dimensions/byte limits, and remove unused delivery-path duplicates."
+        }
+      ]
+    }
+  ],
+  "action_plan": {
+    "phases": [
+      {
+        "name": "Phase 0: Security incident response",
+        "timeframe": "Today",
+        "items": [
+          "Remove or authenticate /api/debug",
+          "Rotate Razorpay secret and review access logs",
+          "Remove sensitive output and diagnostic database writes"
+        ]
+      },
+      {
+        "name": "Phase 1: Indexing foundation",
+        "timeframe": "Days 1-3",
+        "items": [
+          "Choose canonical production hostname and block preview indexing",
+          "Add metadataBase, canonicals and noindex controls",
+          "Add robots.ts and sitemap.ts",
+          "Server-render product links and URL-based pagination"
+        ]
+      },
+      {
+        "name": "Phase 2: Catalog and rich results",
+        "timeframe": "Weeks 1-2",
+        "items": [
+          "Add Product/Offer/Breadcrumb and Organization/WebSite structured data",
+          "Consolidate duplicate product families",
+          "Add missing images and complete thin product content",
+          "Publish core ecommerce policies"
+        ]
+      },
+      {
+        "name": "Phase 3: Performance and authority",
+        "timeframe": "Weeks 2-6 and ongoing",
+        "items": [
+          "Optimize hero poster/video and source images",
+          "Substantiate claims and add named expertise",
+          "Publish first-party brew guidance",
+          "Establish Search Console, schema validation and real-user CWV monitoring"
+        ]
+      }
+    ]
+  },
+  "artifacts": {
+    "findings_dir": "findings/",
+    "screenshots_dir": "screenshots/"
+  }
+}

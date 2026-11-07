@@ -56,10 +56,10 @@ export function Nav() {
             <Image
               src="/images/bean-leaf-brew-logo-enhanced.png"
               alt=""
-              width={72}
-              height={72}
+              width={64}
+              height={64}
               quality={100}
-              className="h-18 w-18 object-contain"
+              className="h-16 w-16 object-contain"
               preload
             />
             <span className="hidden font-serif text-base tracking-[0.04em] text-[#F7F0E6] sm:block">

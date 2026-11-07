@@ -2,31 +2,43 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 
-const categories = [
+type CategorySlug = "ground-coffee" | "instant-premix" | "whole-bean";
+
+interface Props {
+  categoryImages?: Partial<Record<CategorySlug, string>>;
+}
+
+const categories: Array<{
+  title: string;
+  description: string;
+  slug: CategorySlug;
+  fallbackImage: string;
+  className: string;
+}> = [
   {
     title: "Ground coffee",
     description: "Choose the grind. Keep the ritual.",
-    href: "/shop?category=ground-coffee",
-    image: "/images/GC_Beans_01.webp",
+    slug: "ground-coffee",
+    fallbackImage: "/images/GC_Beans_01.webp",
     className: "min-h-[520px] lg:row-span-2",
   },
   {
     title: "Instant premixes",
     description: "A proper cup in under a minute.",
-    href: "/shop?category=instant-premix",
-    image: "/images/DSC5479.webp",
+    slug: "instant-premix",
+    fallbackImage: "/images/DSC5479.webp",
     className: "min-h-[300px]",
   },
   {
     title: "Whole bean",
     description: "Roasted fresh for your grinder.",
-    href: "/shop?category=whole-bean",
-    image: "/images/DB_Beans_01.webp",
+    slug: "whole-bean",
+    fallbackImage: "/images/DB_Beans_01.webp",
     className: "min-h-[300px]",
   },
 ];
 
-export function ShopByCategory() {
+export function ShopByCategory({ categoryImages = {} }: Props) {
   return (
     <section className="bg-[#f7f0e6] py-20 sm:py-28">
       <div className="mx-auto max-w-7xl px-6">
@@ -46,11 +58,11 @@ export function ShopByCategory() {
           {categories.map((category) => (
             <Link
               key={category.title}
-              href={category.href}
+              href={`/shop?category=${category.slug}`}
               className={`reveal-on-scroll group relative overflow-hidden bg-[#27160f] ${category.className} focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#9b6a3c]`}
             >
               <Image
-                src={category.image}
+                src={categoryImages[category.slug] ?? category.fallbackImage}
                 alt={`${category.title} from Bean Leaf Brew`}
                 fill
                 className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.035]"
