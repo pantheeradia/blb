@@ -5,6 +5,7 @@ import { pendingOrders } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { createOrderFromPending, CustomerData, AttributionData } from "@/lib/createOrderFromPending";
 import { sendOrderConfirmation } from "@/lib/sendOrderConfirmation";
+import { enqueueBackgroundJob } from "@/lib/backgroundJobs";
 
 // Razorpay POSTs form data here after UPI/payment redirect flow
 export async function POST(req: NextRequest) {
@@ -67,8 +68,11 @@ export async function POST(req: NextRequest) {
 
     if (result.success) {
       console.log("Callback: order created:", result.orderNumber);
-      sendOrderConfirmation({ customer, orderId: razorpay_order_id, orderNumber: result.orderNumber, paymentId: razorpay_payment_id })
-        .catch((err) => console.error("Callback email failed (order saved):", err));
+      if (result.created) {
+        enqueueBackgroundJob("order-confirmation-email", () =>
+          sendOrderConfirmation({ customer, orderId: razorpay_order_id, orderNumber: result.orderNumber, paymentId: razorpay_payment_id })
+        );
+      }
     } else {
       console.error("Callback: createOrderFromPending failed:", result.error);
     }

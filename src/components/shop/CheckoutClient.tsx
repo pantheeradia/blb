@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useCartStore, lineKey, unitPrice } from "@/store/cart";
 import { formatPrice } from "@/lib/utils";
 import { getStoredAttribution } from "@/lib/utmCapture";
@@ -28,7 +29,31 @@ declare global {
   }
 }
 
+let razorpayLoader: Promise<void> | null = null;
+
+function loadRazorpay(): Promise<void> {
+  if (window.Razorpay) return Promise.resolve();
+  if (razorpayLoader) return razorpayLoader;
+
+  razorpayLoader = new Promise((resolve, reject) => {
+    const existing = document.querySelector<HTMLScriptElement>('script[src="https://checkout.razorpay.com/v1/checkout.js"]');
+    const script = existing ?? document.createElement("script");
+    script.addEventListener("load", () => resolve(), { once: true });
+    script.addEventListener("error", () => {
+      razorpayLoader = null;
+      reject(new Error("Failed to load payment gateway"));
+    }, { once: true });
+    if (!existing) {
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      document.body.appendChild(script);
+    }
+  });
+
+  return razorpayLoader;
+}
+
 export function CheckoutClient() {
+  const router = useRouter();
   const { items, total, clearCart } = useCartStore();
   const [form, setForm] = useState<FormData>(INITIAL);
   const [loading, setLoading] = useState(false);
@@ -42,6 +67,8 @@ export function CheckoutClient() {
   const [couponLoading, setCouponLoading] = useState(false);
   const [couponError, setCouponError] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount: number } | null>(null);
+  const couponRequestInFlight = useRef(false);
+  const paymentRequestInFlight = useRef(false);
 
   const cartTotal = total();
   const finalTotal = appliedCoupon ? Math.max(0, cartTotal - appliedCoupon.discount) : cartTotal;
@@ -83,26 +110,35 @@ export function CheckoutClient() {
   const cityOptions = getCitiesForState(form.state);
 
   async function applyCoupon() {
-    if (!couponInput.trim()) return;
+    if (!couponInput.trim() || couponRequestInFlight.current) return;
+    couponRequestInFlight.current = true;
     setCouponLoading(true);
     setCouponError("");
     setAppliedCoupon(null);
-    const res = await fetch("/api/coupon/validate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code: couponInput.trim(), cartTotal }),
-    });
-    const data = await res.json();
-    if (res.ok && data.valid) {
-      setAppliedCoupon({ code: data.code, discount: data.discount });
-    } else {
-      setCouponError(data.error ?? "Invalid coupon");
+    try {
+      const res = await fetch("/api/coupon/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: couponInput.trim(), cartTotal }),
+      });
+      const data = await res.json();
+      if (res.ok && data.valid) {
+        setAppliedCoupon({ code: data.code, discount: data.discount });
+      } else {
+        setCouponError(data.error ?? "Invalid coupon");
+      }
+    } catch {
+      setCouponError("Could not validate the coupon. Please try again.");
+    } finally {
+      couponRequestInFlight.current = false;
+      setCouponLoading(false);
     }
-    setCouponLoading(false);
   }
 
   async function handlePay(e: React.FormEvent) {
     e.preventDefault();
+    if (paymentRequestInFlight.current) return;
+    paymentRequestInFlight.current = true;
     setError("");
     setLoading(true);
 
@@ -127,7 +163,7 @@ export function CheckoutClient() {
         });
         if (res.ok) {
           clearCart();
-          window.location.href = "/checkout/success";
+          router.push("/checkout/success");
         } else {
           const data = await res.json().catch(() => ({}));
           setError(data.error ?? "Something went wrong. Please try again.");
@@ -135,6 +171,7 @@ export function CheckoutClient() {
       } catch {
         setError("Something went wrong. Please try again.");
       }
+      paymentRequestInFlight.current = false;
       setLoading(false);
       return;
     }
@@ -148,12 +185,8 @@ export function CheckoutClient() {
       const data = await res.json();
       if (!res.ok || !data.id) throw new Error(data.error ?? "Failed to create order");
 
-      const script = document.createElement("script");
-      script.src = "https://checkout.razorpay.com/v1/checkout.js";
-      document.body.appendChild(script);
-
-      script.onload = () => {
-        const rzp = new window.Razorpay({
+      await loadRazorpay();
+      const rzp = new window.Razorpay({
           key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
           amount: data.amount,
           currency: "INR",
@@ -169,6 +202,7 @@ export function CheckoutClient() {
           theme: { color: "#C9953C" },
           modal: {
             ondismiss: () => {
+              paymentRequestInFlight.current = false;
               setLoading(false);
             },
           },
@@ -181,27 +215,24 @@ export function CheckoutClient() {
               });
               if (verify.ok) {
                 clearCart();
-                window.location.href = "/checkout/success";
+                router.push("/checkout/success");
               } else {
                 const errData = await verify.json().catch(() => ({}));
                 setError(`Payment received but order confirmation failed (${verify.status}: ${errData.error ?? "unknown"}). Payment ID: ${response.razorpay_payment_id}`);
+                paymentRequestInFlight.current = false;
                 setLoading(false);
               }
             } catch (handlerErr) {
               setError(`Payment received but confirmation request failed: ${handlerErr instanceof Error ? handlerErr.message : String(handlerErr)}. Payment ID: ${response.razorpay_payment_id}`);
+              paymentRequestInFlight.current = false;
               setLoading(false);
             }
           },
-        });
-        rzp.open();
-      };
-
-      script.onerror = () => {
-        setError("Failed to load payment gateway. Please try again.");
-        setLoading(false);
-      };
+      });
+      rzp.open();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+      paymentRequestInFlight.current = false;
       setLoading(false);
     }
   }

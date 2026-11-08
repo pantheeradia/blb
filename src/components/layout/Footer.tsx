@@ -23,10 +23,10 @@ export function Footer() {
             <Image
               src="/images/logo.png"
               alt="Bean Leaf Brew"
-              width={140}
-              height={42}
-              style={{ height: "40px", width: "auto" }}
-              className="mb-4"
+              width={112}
+              height={112}
+              quality={100}
+              className="mb-5 h-28 w-28 object-contain"
             />
             <p className="text-sm text-[#F7F0E6]/60 leading-relaxed max-w-sm">
               Artisan coffee roasted in small batches in Whitefield, Bengaluru.

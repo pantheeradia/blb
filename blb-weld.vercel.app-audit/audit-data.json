@@ -1,0 +1,113 @@
+{
+  "summary": {
+    "health_score": 49,
+    "business_type": "Ecommerce specialty coffee and instant-premix brand with local Bengaluru operations",
+    "audit_date": "2026-11-03",
+    "top_findings": [
+      "Production host, staging indexation, and legacy redirect strategy are unresolved",
+      "The shop catalog bails to client rendering and exposes zero raw product anchors",
+      "Sitemap, robots, canonicals, and utility-route noindex controls are missing",
+      "All sampled pages lack structured data",
+      "Product content and ecommerce policy coverage are too thin for a safe launch"
+    ],
+    "quick_wins": [
+      "Apply noindex to preview and operational routes",
+      "Set the production metadataBase and canonicals",
+      "Generate robots and sitemap after the host decision",
+      "Server-render the shop product-link graph",
+      "Replace the oversized hero poster and remove duplicate preload"
+    ],
+    "limitations": [
+      "No Search Console, GA4, Merchant Center, GBP, or platform-specific AI visibility data",
+      "No CrUX field data and PageSpeed Insights was quota-blocked",
+      "Live deployment differs from the local workspace",
+      "Performance score is provisional"
+    ]
+  },
+  "categories": [
+    {
+      "name": "Technical SEO",
+      "score": 55,
+      "what_works": ["Correct public status codes", "HTTPS and security headers", "Homepage prerendering and Vercel caching"],
+      "findings": [
+        {"title": "Canonical host and migration strategy unresolved", "severity": "Critical", "description": "The existing production domain remains indexed while the preview host has no canonical strategy.", "recommendation": "Keep previews noindex and use the final production domain consistently with a complete redirect map."},
+        {"title": "Shop catalog missing from raw HTML", "severity": "High", "description": "Twenty-three products are serialized but no product anchors are in initial HTML.", "recommendation": "Server-render the default catalog and enhance it client-side."},
+        {"title": "Discovery and index controls missing", "severity": "High", "description": "robots.txt and sitemap.xml return 404; canonicals and utility-route noindex are absent.", "recommendation": "Add host-aware metadata routes, canonicals, and noindex controls."},
+        {"title": "Live deployment differs from source", "severity": "High", "description": "Live image/logo behavior does not match the current repo and the current source build fails.", "recommendation": "Get the build green, deploy the intended SHA, and re-audit."}
+      ]
+    },
+    {
+      "name": "Content Quality",
+      "score": 55,
+      "what_works": ["Concrete Bengaluru and sourcing facts", "Visible address, phone, email, and hours", "Clear brand voice"],
+      "findings": [
+        {"title": "Product content is thin", "severity": "High", "description": "Sampled products expose roughly 51-75 main-content words and omit common purchase facts.", "recommendation": "Add verified specifications, preparation, origin, storage, logistics, policies, reviews, and related products."},
+        {"title": "Ecommerce policies are absent", "severity": "High", "description": "No privacy, terms, shipping, return/refund, or payment policy routes are present.", "recommendation": "Publish accurate policies and link them from footer and purchase flows."},
+        {"title": "Authority and claim evidence is limited", "severity": "Medium", "description": "Founder credentials, producer proof, certifications, review provenance, and health-claim evidence are weak.", "recommendation": "Add accountable people and primary evidence; soften unsupported claims."}
+      ]
+    },
+    {
+      "name": "On-Page SEO",
+      "score": 46,
+      "what_works": ["One H1 per sampled page", "Relevant base metadata", "Strong image-alt coverage"],
+      "findings": [
+        {"title": "Shop has no raw product-link graph", "severity": "High", "description": "The principal category page renders a skeleton without JavaScript.", "recommendation": "Server-render product cards and links."},
+        {"title": "Metadata templates are incomplete", "severity": "Medium", "description": "Short titles/descriptions, inherited Contact description, and no social metadata were found.", "recommendation": "Add page-type metadata, canonicals, and OG/Twitter previews."},
+        {"title": "Category parameters need a strategy", "severity": "Medium", "description": "Footer category links are query-string client states rather than dedicated landing pages.", "recommendation": "Canonicalize filters to shop or build unique server-rendered category routes when justified."}
+      ]
+    },
+    {
+      "name": "Schema / Structured Data",
+      "score": 5,
+      "what_works": ["Visible page data can support truthful JSON-LD"],
+      "findings": [
+        {"title": "Product and Offer markup absent", "severity": "High", "description": "Sampled product pages contain no structured data.", "recommendation": "Add Product/Offer or ProductGroup and BreadcrumbList after canonical/product data is stable."},
+        {"title": "Organization and WebSite graph absent", "severity": "High", "description": "No stable machine-readable brand entity exists.", "recommendation": "Add linked Organization/WebSite JSON-LD with verified identity data."}
+      ]
+    },
+    {
+      "name": "Performance",
+      "score": 56,
+      "what_works": ["Prerendered cached homepage", "Self-hosted fonts", "Deferred hero video source"],
+      "findings": [
+        {"title": "Oversized hero poster", "severity": "High", "description": "The likely LCP poster is about 976 KB and bypasses responsive image optimization.", "recommendation": "Use one responsive, purpose-sized poster and verify LCP."},
+        {"title": "Automatic 14.2 MB hero video", "severity": "High", "description": "Video begins downloading after load for every capable visitor.", "recommendation": "Re-encode, adapt by device/preferences, and conditionally load."},
+        {"title": "Material hydration footprint", "severity": "Medium", "description": "About 717.6 KB decoded JS/CSS and client-rendered catalog increase runtime cost.", "recommendation": "Reduce client boundaries and server-render primary content."}
+      ]
+    },
+    {
+      "name": "AI Search Readiness",
+      "score": 53,
+      "what_works": ["Homepage content in raw HTML", "Concrete brand/location facts", "Search crawlers not blocked"],
+      "findings": [
+        {"title": "Product pages lack citable answer material", "severity": "High", "description": "Important specifications, preparation, evidence, and policies are absent.", "recommendation": "Publish factual answer sections and evidence-led guides."},
+        {"title": "Entity graph absent", "severity": "High", "description": "No Organization/Product graph exists.", "recommendation": "Implement truthful schema as normal SEO infrastructure, not an AI hack."}
+      ]
+    },
+    {
+      "name": "Images",
+      "score": 66,
+      "what_works": ["Complete sampled alt coverage", "Responsive Next Image output", "Below-fold lazy loading"],
+      "findings": [
+        {"title": "Hero poster bypasses responsive optimization", "severity": "High", "description": "The direct poster is about 976 KB.", "recommendation": "Replace with a purpose-sized responsive poster."},
+        {"title": "Product gallery alts are mechanical", "severity": "Medium", "description": "Images use generic Image N/thumbnail N descriptions.", "recommendation": "Store asset-specific alt/caption data."},
+        {"title": "Source assets are oversized", "severity": "Medium", "description": "Nineteen image files exceed 500 KB and 11 exceed 1 MB.", "recommendation": "Normalize web masters and audit direct/CSS image use."}
+      ]
+    }
+  ],
+  "action_plan": {
+    "phases": [
+      {"name": "Phase 0: Domain Decision", "timeframe": "Before implementation", "items": ["Choose staging versus production policy", "Keep preview hosts noindex", "Create legacy redirect inventory"]},
+      {"name": "Phase 1: Launch Blockers", "timeframe": "Week 1", "items": ["Fix production build", "Deploy intended SHA", "Server-render shop", "Add canonicals, robots, sitemap, noindex, and schema"]},
+      {"name": "Phase 2: Commerce and Performance", "timeframe": "Weeks 2-3", "items": ["Publish policies", "Expand product content", "Optimize hero poster/video", "Improve metadata and internal links"]},
+      {"name": "Phase 3: Authority and Demand", "timeframe": "Month 2", "items": ["Add founder/producer evidence", "Normalize location entities", "Publish first-hand guides", "Add verified reviews and Merchant Center"]},
+      {"name": "Phase 4: Monitoring", "timeframe": "Ongoing", "items": ["Track index coverage and redirects", "Monitor CWV and rich results", "Measure non-brand visibility and organic conversion"]}
+    ]
+  },
+  "artifacts": {
+    "full_report": "FULL-AUDIT-REPORT.md",
+    "action_plan": "ACTION-PLAN.md",
+    "findings_dir": "findings/",
+    "screenshots_dir": null
+  }
+}

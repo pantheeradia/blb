@@ -32,6 +32,7 @@ export const orders = sqliteTable("orders", {
   statusIdx: index("idx_orders_status").on(t.status),
   invoiceNumberIdx: index("idx_orders_invoice_number").on(t.invoiceNumber),
   orderNumberIdx: index("idx_orders_order_number").on(t.orderNumber),
+  statusCreatedAtIdx: index("idx_orders_status_created_at").on(t.status, t.createdAt),
 }));
 
 export const orderItems = sqliteTable("order_items", {
@@ -119,6 +120,8 @@ export const products = sqliteTable("products", {
 }, (t) => ({
   categoryIdx: index("idx_products_category").on(t.category),
   featuredIdx: index("idx_products_featured").on(t.featured),
+  visibleCategoryIdx: index("idx_products_visible_category").on(t.visible, t.category),
+  visibleFeaturedIdx: index("idx_products_visible_featured").on(t.visible, t.featured),
 }));
 
 export const orderNotes = sqliteTable("order_notes", {
@@ -159,7 +162,9 @@ export const pendingOrders = sqliteTable("pending_orders", {
   customerJson: text("customer_json"),
   attributionJson: text("attribution_json"),
   createdAt: text("created_at").notNull().default(sql`(datetime('now'))`),
-});
+}, (t) => ({
+  createdAtIdx: index("idx_pending_orders_created_at").on(t.createdAt),
+}));
 
 export type Setting = typeof settings.$inferSelect;
 export type AdminUser = typeof adminUsers.$inferSelect;

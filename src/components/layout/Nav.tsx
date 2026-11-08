@@ -47,16 +47,23 @@ export function Nav() {
             : "border-[#f7f0e6]/10 bg-[#1A0E08]"
         )}
       >
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-          <Link href="/" className="flex-shrink-0 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#C9953C]">
+        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6">
+          <Link
+            href="/"
+            aria-label="Bean Leaf Brew home"
+            className="flex flex-shrink-0 items-center gap-3 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#C9953C]"
+          >
             <Image
               src="/images/logo.png"
-              alt="Bean Leaf Brew"
-              width={160}
-              height={48}
-              style={{ height: "48px", width: "auto", objectFit: "contain" }}
-              priority
+              alt=""
+              width={64}
+              height={64}
+              className="h-16 w-16 object-contain"
+              preload
             />
+            <span className="hidden font-serif text-base tracking-[0.04em] text-[#F7F0E6] sm:block">
+              Bean Leaf Brew
+            </span>
           </Link>
 
           <div className="hidden items-center gap-9 md:flex">

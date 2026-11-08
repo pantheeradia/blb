@@ -36,7 +36,7 @@ export default function AboutPage() {
               <div className="space-y-4 text-sm text-[#4A2512] leading-relaxed">
                 <p>
                   Bean Leaf Brew started as a passion project in a small roastery in Whitefield, Bengaluru.
-                  We wanted to bring the quality of specialty coffee that you'd find in the best cafes directly
+                  We wanted to bring the quality of specialty coffee that you&apos;d find in the best cafes directly
                   to your doorstep — without the café markup.
                 </p>
                 <p>
@@ -46,7 +46,7 @@ export default function AboutPage() {
                   the aroma and freshness.
                 </p>
                 <p>
-                  No middlemen. No stale stock. Just coffee that's honest and alive.
+                  No middlemen. No stale stock. Just coffee that&apos;s honest and alive.
                   Anytime. Anywhere.
                 </p>
               </div>

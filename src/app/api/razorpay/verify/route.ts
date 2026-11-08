@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { createOrderFromPending } from "@/lib/createOrderFromPending";
 import { sendOrderConfirmation } from "@/lib/sendOrderConfirmation";
+import { enqueueBackgroundJob } from "@/lib/backgroundJobs";
 
 export async function POST(req: NextRequest) {
   console.log("=== VERIFY CALLED ===", new Date().toISOString());
@@ -35,8 +36,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: result.error }, { status: 400 });
     }
 
-    sendOrderConfirmation({ customer, orderId: razorpay_order_id, orderNumber: result.orderNumber, paymentId: razorpay_payment_id })
-      .catch((err) => console.error("Order confirmation email failed (order saved):", err));
+    if (result.created) {
+      enqueueBackgroundJob("order-confirmation-email", () =>
+        sendOrderConfirmation({ customer, orderId: razorpay_order_id, orderNumber: result.orderNumber, paymentId: razorpay_payment_id })
+      );
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {

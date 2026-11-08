@@ -1,5 +1,5 @@
 import { db } from "@/db/client";
-import { orders, customers } from "@/db/schema";
+import { orders } from "@/db/schema";
 import { sql, gte } from "drizzle-orm";
 import Link from "next/link";
 import { OrderPipeline } from "./OrderPipeline";
@@ -11,9 +11,8 @@ export default async function AdminDashboard() {
   const start1m = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate()).toISOString();
   const start3m = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate()).toISOString();
 
-  const [allOrders, [{ customerCount }], statusStats, periodCurrent, period1m, period3m] = await Promise.all([
+  const [allOrders, statusStats, periodCurrent, period1m, period3m] = await Promise.all([
     db.select().from(orders).orderBy(sql`${orders.createdAt} desc`).limit(5),
-    db.select({ customerCount: sql<number>`count(*)` }).from(customers),
     db.select({
       status: orders.status,
       count: sql<number>`count(*)`,

@@ -3,7 +3,6 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { getProductBySlug } from "@/lib/products";
 
-// Map categories to representative product slugs
 const CATEGORY_PRODUCTS = {
   "ground-coffee": "traditional-south", // South Indian Filter Coffee
   "instant-premix": "black-tea-strawberry", // Representative instant premix
@@ -11,7 +10,6 @@ const CATEGORY_PRODUCTS = {
 } as const;
 
 export async function ShopByCategory() {
-  // Fetch the representative products to get their images
   const [groundCoffeeProduct, instantPremixProduct, wholeBeanProduct] = await Promise.all([
     getProductBySlug(CATEGORY_PRODUCTS["ground-coffee"]),
     getProductBySlug(CATEGORY_PRODUCTS["instant-premix"]),

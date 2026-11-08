@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ShoppingBag, Minus, Plus } from "lucide-react";
 import { type Product } from "@/types";
@@ -30,17 +30,12 @@ export function ProductActions({ product, initialVariant }: Props) {
 
   const [selectedWeight, setSelectedWeight] = useState("");
   const [selectedEquipment, setSelectedEquipment] = useState("");
-  const [selectedVariant, setSelectedVariant] = useState(initialVariant ?? "");
-
-  // Auto-select variant from URL param for instant premix
-  useEffect(() => {
-    if (isInstantPremix && hasVariants && !selectedVariant) {
-      const variantParam = searchParams.get("variant");
-      if (variantParam && instantPremixVariants.some((v) => v.name === variantParam)) {
-        setSelectedVariant(variantParam);
-      }
-    }
-  }, [isInstantPremix, hasVariants, instantPremixVariants, searchParams, selectedVariant]);
+  const [selectedVariant, setSelectedVariant] = useState(() => {
+    const requestedVariant = initialVariant ?? searchParams.get("variant") ?? "";
+    return instantPremixVariants.some((variant) => variant.name === requestedVariant)
+      ? requestedVariant
+      : "";
+  });
 
   const selectedWeightOption = weightOptions.find((w) => w.label === selectedWeight);
   const selectedVariantOption = instantPremixVariants.find((v) => v.name === selectedVariant);
