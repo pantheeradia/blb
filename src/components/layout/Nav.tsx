@@ -54,11 +54,10 @@ export function Nav() {
             className="flex flex-shrink-0 items-center gap-3 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#C9953C]"
           >
             <Image
-              src="/images/bean-leaf-brew-logo-enhanced.png"
+              src="/images/logo.png"
               alt=""
               width={64}
               height={64}
-              quality={100}
               className="h-16 w-16 object-contain"
               preload
             />
