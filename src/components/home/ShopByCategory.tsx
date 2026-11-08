@@ -4,9 +4,9 @@ import { ArrowUpRight } from "lucide-react";
 import { getProductBySlug } from "@/lib/products";
 
 const CATEGORY_PRODUCTS = {
-  "ground-coffee": "traditional-south", // South Indian Filter Coffee
+  "ground-coffee": "south-indian-filter-coffee",
   "instant-premix": "black-tea-strawberry", // Representative instant premix
-  "whole-bean": "whole-bean-morning-buzz", // Morning Buzz
+  "whole-bean": "morning--buzz-beans",
 } as const;
 
 export async function ShopByCategory() {
