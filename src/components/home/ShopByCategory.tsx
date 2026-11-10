@@ -10,18 +10,14 @@ const CATEGORY_PRODUCTS = {
 } as const;
 
 export async function ShopByCategory() {
-  const [groundCoffeeProduct, instantPremixProduct, wholeBeanProduct] = await Promise.all([
-    getProductBySlug(CATEGORY_PRODUCTS["ground-coffee"]),
-    getProductBySlug(CATEGORY_PRODUCTS["instant-premix"]),
-    getProductBySlug(CATEGORY_PRODUCTS["whole-bean"]),
-  ]);
+  const instantPremixProduct = await getProductBySlug(CATEGORY_PRODUCTS["instant-premix"]);
 
   const categories = [
     {
       title: "Ground coffee",
       description: "Choose the grind. Keep the ritual.",
       href: "/shop?category=ground-coffee",
-      image: groundCoffeeProduct?.images[0] ?? "/images/2-3.webp",
+      image: "/images/front-page-ground-coffee.png",
       className: "min-h-[520px] lg:row-span-2",
     },
     {
@@ -35,7 +31,7 @@ export async function ShopByCategory() {
       title: "Whole bean",
       description: "Roasted fresh for your grinder.",
       href: "/shop?category=whole-bean",
-      image: wholeBeanProduct?.images[0] ?? "/images/3-3.webp",
+      image: "/images/front-page-whole-bean.png",
       className: "min-h-[300px]",
     },
   ];
