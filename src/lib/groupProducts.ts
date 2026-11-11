@@ -9,7 +9,7 @@ export interface ProductVariant {
   weight: string;
   sellingPrice: number;
   regularPrice: number | null;
-  image: string;
+  images: string[];
   shortDescription: string;
   categoryLabel: string;
 }
@@ -77,7 +77,7 @@ export function groupProducts(products: Product[]): ProductGroup[] {
         weight: variant.weight,
         sellingPrice: variant.sellingPrice,
         regularPrice: variant.regularPrice,
-        image: (product.images && product.images.length > 0) ? product.images[0] : "",
+        images: (product.images ?? []).filter(Boolean),
         shortDescription: product.shortDescription,
         categoryLabel: product.categoryLabel ?? product.category,
       });
