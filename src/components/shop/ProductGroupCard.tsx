@@ -3,11 +3,12 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ChevronDown, ShoppingBag } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, ShoppingBag } from "lucide-react";
 import { type ProductGroup } from "@/lib/groupProducts";
 import { type Product } from "@/types";
 import { formatPrice } from "@/lib/utils";
 import { useCartStore } from "@/store/cart";
+import { cn } from "@/lib/utils";
 
 interface Props {
   group: ProductGroup;
@@ -17,9 +18,13 @@ interface Props {
 export function ProductGroupCard({ group, priority = false }: Props) {
   const { addItem } = useCartStore();
   const [selectedVariantIndex, setSelectedVariantIndex] = useState(0);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [failedImage, setFailedImage] = useState<string | null>(null);
 
   const selectedVariant = group.variants[selectedVariantIndex];
+  const validImages = selectedVariant.images.filter(Boolean);
+  const hasMultipleImages = validImages.length > 1;
+  const currentImage = validImages[currentImageIndex] ?? null;
   const isOnSale =
     selectedVariant.regularPrice != null &&
     selectedVariant.regularPrice > selectedVariant.sellingPrice;
@@ -28,6 +33,20 @@ export function ProductGroupCard({ group, priority = false }: Props) {
     selectedVariant.productSlug +
     "?variant=" +
     encodeURIComponent(selectedVariant.variantName);
+
+  const showPreviousImage = () => {
+    setCurrentImageIndex((current) =>
+      current === 0 ? validImages.length - 1 : current - 1
+    );
+    setFailedImage(null);
+  };
+
+  const showNextImage = () => {
+    setCurrentImageIndex((current) =>
+      current === validImages.length - 1 ? 0 : current + 1
+    );
+    setFailedImage(null);
+  };
 
   const handleAddToCart = () => {
     const productForCart: Product = {
@@ -44,7 +63,7 @@ export function ProductGroupCard({ group, priority = false }: Props) {
       showNotes: false,
       price: selectedVariant.sellingPrice,
       regularPrice: selectedVariant.regularPrice ?? undefined,
-      images: selectedVariant.image ? [selectedVariant.image] : [],
+      images: selectedVariant.images,
       tags: [],
       inStock: true,
       visible: true,
@@ -58,22 +77,28 @@ export function ProductGroupCard({ group, priority = false }: Props) {
   };
 
   return (
-    <article className="reveal-on-scroll group flex min-w-0 flex-col">
+    <article
+      className="reveal-on-scroll group flex min-w-0 flex-col"
+      onMouseLeave={() => {
+        setCurrentImageIndex(0);
+        setFailedImage(null);
+      }}
+    >
       <div className="relative aspect-[5/5.35] overflow-hidden bg-[#e6d9ca]">
         <Link
           href={detailHref}
           aria-label={"View " + selectedVariant.variantName}
           className="absolute inset-0 focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-[#27150e]"
         >
-          {selectedVariant.image && failedImage !== selectedVariant.image ? (
+          {currentImage && failedImage !== currentImage ? (
             <Image
-              src={selectedVariant.image}
+              src={currentImage}
               alt={selectedVariant.variantName}
               fill
               fetchPriority={priority ? "high" : "auto"}
               className="object-contain p-7 transition-transform duration-700 ease-out group-hover:scale-[1.035]"
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-              onError={() => setFailedImage(selectedVariant.image)}
+              onError={() => setFailedImage(currentImage)}
             />
           ) : (
             <span className="flex h-full w-full items-center justify-center px-6 text-center text-xs text-[#887260]">
@@ -84,19 +109,57 @@ export function ProductGroupCard({ group, priority = false }: Props) {
 
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#27150e]/15 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
+        {hasMultipleImages && (
+          <>
+            <button
+              type="button"
+              onClick={showPreviousImage}
+              aria-label="Previous product image"
+              className="absolute left-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center bg-[#faf5ed]/92 text-[#27150e] opacity-0 transition-all duration-300 hover:bg-[#faf5ed] focus:opacity-100 group-hover:opacity-100"
+            >
+              <ChevronLeft size={15} />
+            </button>
+            <button
+              type="button"
+              onClick={showNextImage}
+              aria-label="Next product image"
+              className="absolute right-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center bg-[#faf5ed]/92 text-[#27150e] opacity-0 transition-all duration-300 hover:bg-[#faf5ed] focus:opacity-100 group-hover:opacity-100"
+            >
+              <ChevronRight size={15} />
+            </button>
+            <div className="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 gap-1.5">
+              {validImages.map((image, index) => (
+                <button
+                  key={image + index}
+                  type="button"
+                  onClick={() => {
+                    setCurrentImageIndex(index);
+                    setFailedImage(null);
+                  }}
+                  aria-label={"View product image " + (index + 1)}
+                  className={cn(
+                    "h-1.5 bg-[#faf5ed]/65 transition-all duration-300",
+                    index === currentImageIndex ? "w-6 bg-[#faf5ed]" : "w-1.5 hover:bg-[#faf5ed]"
+                  )}
+                />
+              ))}
+            </div>
+          </>
+        )}
+
         {isOnSale && (
-          <span className="absolute left-3 top-3 bg-[#aa7040] px-2.5 py-1 text-[8px] font-semibold uppercase tracking-[0.16em] text-[#fffaf2]">
+          <span className="absolute left-3 top-3 z-10 bg-[#aa7040] px-2.5 py-1 text-[8px] font-semibold uppercase tracking-[0.16em] text-[#fffaf2]">
             Sale
           </span>
         )}
-        <span className="absolute bottom-3 left-3 bg-[#27150e] px-2.5 py-1 text-[8px] font-semibold uppercase tracking-[0.15em] text-[#fffaf2]">
+        <span className="absolute bottom-3 left-3 z-10 bg-[#27150e] px-2.5 py-1 text-[8px] font-semibold uppercase tracking-[0.15em] text-[#fffaf2]">
           {group.variants.length} {group.variants.length === 1 ? "blend" : "blends"}
         </span>
       </div>
 
       <div className="flex flex-1 flex-col pt-4">
         <p className="text-[9px] font-semibold uppercase tracking-[0.17em] text-[#8f5e3b]">
-          Instant premix · {group.groupTitle}
+          {group.groupTitle}
         </p>
 
         <Link
@@ -125,6 +188,7 @@ export function ProductGroupCard({ group, priority = false }: Props) {
               value={selectedVariantIndex}
               onChange={(event) => {
                 setSelectedVariantIndex(Number(event.target.value));
+                setCurrentImageIndex(0);
                 setFailedImage(null);
               }}
               className="w-full appearance-none bg-transparent py-2.5 pr-8 text-xs text-[#27150e] outline-none transition-colors focus:border-[#27150e]"
