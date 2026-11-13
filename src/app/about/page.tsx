@@ -16,10 +16,12 @@ export default function AboutPage() {
       <main className="min-h-screen bg-[#F7F0E6]">
         <section className="relative h-72 bg-[#1A0E08] flex items-end overflow-hidden">
           <Image
-            src="/images/BLB-web-banner-1.webp"
-            alt="Bean Leaf Brew"
+            src="/images/DB_Beans_01.webp"
+            alt="Freshly roasted coffee beans"
             fill
-            className="object-cover opacity-40"
+            priority
+            sizes="100vw"
+            className="object-cover object-top opacity-55"
           />
           <div className="relative z-10 max-w-7xl mx-auto px-6 pb-12 w-full">
             <p className="text-[10px] uppercase tracking-[0.2em] text-[#C9953C] mb-2">Our Story</p>
@@ -55,10 +57,11 @@ export default function AboutPage() {
             <div className="relative">
               <div className="relative h-80 overflow-hidden">
                 <Image
-                  src="/images/DSC5452.webp"
-                  alt="Our roastery"
+                  src="/images/hero-image.jpeg"
+                  alt="Bean Leaf Brew cafe storefront"
                   fill
-                  className="object-cover"
+                  sizes="(min-width: 768px) 50vw, 100vw"
+                  className="object-cover object-center"
                 />
               </div>
             </div>
