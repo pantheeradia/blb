@@ -17,18 +17,21 @@ export function CartDrawer() {
     return () => { document.body.style.overflow = ""; };
   }, [isOpen]);
 
-  if (!isOpen) return null;
-
   const cartTotal = total();
 
   return (
-    <>
+    <div
+      aria-hidden={!isOpen}
+      inert={!isOpen}
+      onKeyDown={(event) => { if (event.key === "Escape") closeCart(); }}
+      className={`fixed inset-0 z-[60] transition-[visibility] duration-0 ${isOpen ? "visible delay-0" : "invisible delay-[400ms] pointer-events-none"}`}
+    >
       <div
-        className="fixed inset-0 z-50 bg-black/50"
+        className={`absolute inset-0 bg-black/50 transition-opacity duration-[400ms] ease-out ${isOpen ? "opacity-100" : "opacity-0"}`}
         onClick={closeCart}
         aria-hidden="true"
       />
-      <aside className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-md bg-[#FAFAF8] flex flex-col shadow-xl">
+      <aside aria-label="Shopping cart" className={`absolute right-0 top-0 bottom-0 w-full max-w-md bg-[#FAFAF8] flex flex-col shadow-xl transition-transform duration-[400ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform ${isOpen ? "translate-x-0" : "translate-x-full"}`}>
         <div className="flex items-center justify-between px-6 py-5 border-b border-[#D4C4B0]">
           <h2 className="font-serif text-lg text-[#1A0E08]">Your Cart</h2>
           <button onClick={closeCart} aria-label="Close cart" className="text-[#8B5E3C] hover:text-[#1A0E08] transition-colors">
@@ -128,6 +131,6 @@ export function CartDrawer() {
           </div>
         )}
       </aside>
-    </>
+    </div>
   );
 }
