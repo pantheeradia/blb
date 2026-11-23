@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowDownUp, ChevronDown, ChevronLeft, ChevronRight, Search, X } from "lucide-react";
 import { type Product } from "@/types";
@@ -12,6 +13,14 @@ import { BREWING_EQUIPMENT_CATALOG } from "@/lib/productOptions";
 import { cn } from "@/lib/utils";
 
 const PAGE_SIZE = 9;
+
+const COLLECTION_DETAILS: Record<string, { image: string; background: string }> = {
+  all: { image: "/images/Roasted-Beans.avif", background: "bg-[#e9dfd2]" },
+  "ground-coffee": { image: "/images/front-page-ground-coffee.png", background: "bg-[#f0e0d7]" },
+  "whole-bean": { image: "/images/front-page-whole-bean.png", background: "bg-[#e1e7dc]" },
+  "instant-premix": { image: "/images/DSC5479.webp", background: "bg-[#f5e7cc]" },
+  "filter-coffee-decoction": { image: "/images/GC_Beans_01.webp", background: "bg-[#e5dfe9]" },
+};
 
 type SortValue = "featured" | "price-asc" | "price-desc" | "name-asc";
 
@@ -140,14 +149,6 @@ function ShopCatalog({ products, urlCategory }: Props & { urlCategory: string | 
     ];
   }, []);
 
-  const categoryCounts = useMemo(() => {
-    const counts: Record<string, number> = { all: products.length };
-    for (const product of products) {
-      counts[product.category] = (counts[product.category] ?? 0) + 1;
-    }
-    return counts;
-  }, [products]);
-
   const initialActive =
     urlCategory && categories.some((category) => category.value === urlCategory)
       ? urlCategory
@@ -160,6 +161,8 @@ function ShopCatalog({ products, urlCategory }: Props & { urlCategory: string | 
   const [sort, setSort] = useState<SortValue>("featured");
   const [page, setPage] = useState(1);
   const debouncedQuery = useDebouncedValue(query, 200);
+  const isSearching = debouncedQuery.trim().length > 0;
+  const effectiveCategory = isSearching ? "all" : active;
 
   const searchSuggestions = useMemo(
     () => Array.from(new Set(products.map((product) => product.name))).slice(0, 12),
@@ -167,9 +170,9 @@ function ShopCatalog({ products, urlCategory }: Props & { urlCategory: string | 
   );
 
   const categoryProducts = useMemo(() => {
-    if (active === "all") return products;
-    return products.filter((product) => product.category === active);
-  }, [active, products]);
+    if (effectiveCategory === "all") return products;
+    return products.filter((product) => product.category === effectiveCategory);
+  }, [effectiveCategory, products]);
 
   const roastOptions = useMemo(() => {
     const labels = new Map(["Light", "Medium Light", "Medium", "Medium Dark", "Dark"].map((label) => [normalizeFilter(label), label]));
@@ -224,8 +227,8 @@ function ShopCatalog({ products, urlCategory }: Props & { urlCategory: string | 
   }, [sort, sortedProducts]);
 
   const isCategoryEmpty = categoryProducts.length === 0;
-  const isSearchEmpty = sortedProducts.length === 0 && debouncedQuery.trim().length > 0;
-  const totalItems = active === "instant-premix" ? instantPremixGroups.length : sortedProducts.length;
+  const isSearchEmpty = sortedProducts.length === 0 && isSearching;
+  const totalItems = effectiveCategory === "instant-premix" ? instantPremixGroups.length : sortedProducts.length;
   const totalPages = Math.ceil(totalItems / PAGE_SIZE);
   const currentPage = Math.min(page, Math.max(totalPages, 1));
   const visibleProducts = sortedProducts.slice(
@@ -237,7 +240,7 @@ function ShopCatalog({ products, urlCategory }: Props & { urlCategory: string | 
     currentPage * PAGE_SIZE
   );
   const activeLabel =
-    categories.find((category) => category.value === active)?.label ?? "All products";
+    categories.find((category) => category.value === effectiveCategory)?.label ?? "All products";
 
   const chooseCategory = (value: string) => {
     setActive(value);
@@ -266,25 +269,22 @@ function ShopCatalog({ products, urlCategory }: Props & { urlCategory: string | 
 
   return (
     <section id="catalog" className="scroll-mt-20 bg-[#f3ece3]">
-      <div className="mx-auto max-w-[1440px] px-6 py-16 sm:py-20">
-        <header className="grid gap-8 lg:grid-cols-[1fr_minmax(360px,0.72fr)] lg:items-end">
+      <div className="mx-auto max-w-7xl px-5 py-10 sm:px-8 sm:py-12">
+        <header className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between md:gap-10">
           <div>
-            <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#8f5e3b]">
-              The collection
-            </p>
-            <h1 className="max-w-2xl font-serif text-4xl leading-[0.98] tracking-[-0.035em] text-[#27150e] sm:text-5xl">
-              Pick a coffee that fits your ritual.
+            <h1 className="font-serif text-3xl leading-tight tracking-[-0.025em] text-[#27150e] sm:text-4xl">
+              Shop our collection
             </h1>
-            <p className="mt-4 max-w-xl text-sm leading-6 text-[#705b4c]">
-              From slow filter mornings to quick premix breaks, every product is made and packed by our team in Whitefield.
+            <p className="mt-2 text-sm leading-6 text-[#705b4c]">
+              Find your favourite coffee, beans and instant blends.
             </p>
           </div>
 
-          <div>
-            <label htmlFor="shop-search" className="mb-2 block text-[9px] font-semibold uppercase tracking-[0.18em] text-[#826a57]">
-              Search the shelf
+          <div className="w-full md:max-w-[340px]">
+            <label htmlFor="shop-search" className="sr-only">
+              Search products
             </label>
-            <div className="flex items-center border-b border-[#a48c74] bg-[#faf6ef]/70 px-1 transition-colors focus-within:border-[#27150e]">
+            <div className="flex items-center rounded-lg border border-[#d2c0ac] bg-[#faf6ef] px-3 transition-colors focus-within:border-[#8f5e3b]">
               <Search size={17} aria-hidden="true" className="shrink-0 text-[#876b55]" />
               <input
                 id="shop-search"
@@ -296,8 +296,8 @@ function ShopCatalog({ products, urlCategory }: Props & { urlCategory: string | 
                   setQuery(event.target.value);
                   setPage(1);
                 }}
-                placeholder="Coffee, roast, tasting note..."
-                className="w-full bg-transparent px-3 py-4 text-sm text-[#27150e] outline-none placeholder:text-[#887260]/65"
+                placeholder="Search products..."
+                className="min-w-0 w-full bg-transparent px-3 py-3 text-sm text-[#27150e] outline-none placeholder:text-[#887260]"
               />
               <datalist id="shop-search-suggestions">
                 {searchSuggestions.map((suggestion) => (
@@ -321,33 +321,58 @@ function ShopCatalog({ products, urlCategory }: Props & { urlCategory: string | 
           </div>
         </header>
 
-        <nav aria-label="Product collections" className="mt-12 border-y border-[#d2c0ac]">
-          <div className="scrollbar-hide flex gap-7 overflow-x-auto">
-            {categories.map((category) => (
+        <nav aria-label="Product collections" className="mt-7 border-b border-[#d2c0ac] pb-5 sm:mt-8 sm:pb-7">
+          <div className="mx-auto grid max-w-4xl grid-cols-2 justify-items-center gap-x-4 gap-y-5 px-2 py-2 min-[480px]:grid-cols-3 sm:grid-cols-5 sm:gap-x-8">
+            {categories.map((category) => {
+              const selected = effectiveCategory === category.value;
+              const details = COLLECTION_DETAILS[category.value] ?? COLLECTION_DETAILS.all;
+              const image = ["instant-premix", "filter-coffee-decoction"].includes(category.value)
+                ? products.find((product) => product.category === category.value && product.images.some(Boolean))?.images.find(Boolean) ?? details.image
+                : details.image;
+              return (
               <button
                 key={category.value}
                 type="button"
                 onClick={() => chooseCategory(category.value)}
-                aria-pressed={active === category.value}
+                aria-pressed={selected}
                 className={cn(
-                  "relative shrink-0 py-5 text-[10px] font-semibold uppercase tracking-[0.15em] transition-colors",
-                  active === category.value
-                    ? "text-[#27150e] after:absolute after:inset-x-0 after:bottom-0 after:h-[2px] after:bg-[#27150e]"
-                    : "text-[#887260] hover:text-[#27150e]"
+                  "group flex w-full max-w-36 flex-col items-center gap-3 rounded-lg text-center focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#8f5e3b]",
+                  selected ? "text-[#4a2818]" : "text-[#705b4c] hover:text-[#4a2818]"
                 )}
               >
-                {category.label}
-                <sup className="ml-1.5 text-[8px] font-medium tabular-nums text-[#8f5e3b]">
-                  {categoryCounts[category.value] ?? 0}
-                </sup>
+                <span className={cn(
+                  "relative flex h-24 w-24 items-center justify-center rounded-full transition-all duration-200 motion-reduce:transition-none sm:h-28 sm:w-28",
+                  details.background,
+                  selected
+                    ? "ring-2 ring-[#8f5e3b] ring-offset-4 ring-offset-[#f3ece3]"
+                    : "ring-1 ring-transparent group-hover:ring-[#b99b7d] group-hover:ring-offset-4 group-hover:ring-offset-[#f3ece3]"
+                )}>
+                  <span className="relative h-full w-full overflow-hidden rounded-full">
+                    <Image
+                      src={image}
+                      alt=""
+                      fill
+                      sizes="(min-width: 640px) 112px, 96px"
+                      className={cn(
+                        "transition-transform duration-200 motion-reduce:transition-none",
+                        ["instant-premix", "filter-coffee-decoction"].includes(category.value)
+                          ? "object-cover"
+                          : "object-contain p-3 mix-blend-multiply",
+                        selected ? "scale-105" : "group-hover:scale-105"
+                      )}
+                    />
+                  </span>
+                </span>
+                <span className={cn("min-h-10 max-w-36 text-[13px] leading-5", selected ? "font-semibold text-[#4a2818]" : "font-medium")}>{category.label}</span>
               </button>
-            ))}
+              );
+            })}
           </div>
         </nav>
 
-        <div className="mt-8 grid items-start gap-8 lg:grid-cols-[230px_minmax(0,1fr)] lg:gap-10">
+        <div className="mt-6 grid items-start gap-6 lg:grid-cols-[200px_minmax(0,1fr)] lg:gap-8">
           <button type="button" aria-expanded={mobileFiltersOpen} aria-controls="product-filters" onClick={() => setMobileFiltersOpen((open) => !open)} className="flex items-center justify-between border-y border-[#d2c0ac] py-4 text-xs font-semibold uppercase tracking-widest text-[#27150e] lg:hidden">Filters ({selectedRoasts.length + selectedEquipment.length})<ChevronDown size={16} /></button>
-          <aside id="product-filters" aria-label="Product filters" className={cn("border-y border-[#d2c0ac] lg:sticky lg:top-24 lg:block lg:max-h-[calc(100dvh-7rem)] lg:overflow-y-auto lg:border-y-0 lg:border-r lg:pr-6", !mobileFiltersOpen && "hidden")}>
+          <aside id="product-filters" aria-label="Product filters" className={cn("border-y border-[#d2c0ac] lg:block lg:border-y-0 lg:border-r lg:pr-6", !mobileFiltersOpen && "hidden")}>
             <div className="flex items-center justify-between gap-3 py-4">
               <h3 className="text-xs font-semibold uppercase tracking-[0.15em] text-[#27150e]">Filters</h3>
               {(selectedRoasts.length > 0 || selectedEquipment.length > 0) && <button type="button" className="text-xs text-[#8f5e3b] underline underline-offset-4" onClick={() => { setSelectedRoasts([]); setSelectedEquipment([]); setPage(1); }}>Clear all</button>}
@@ -365,37 +390,38 @@ function ShopCatalog({ products, urlCategory }: Props & { urlCategory: string | 
             ))}
           </aside>
           <div className="min-w-0">
-            <div className="flex flex-col gap-4 pb-7 sm:flex-row sm:items-center sm:justify-between">
+            <div className="mb-6 flex flex-col gap-3 border-b border-[#d2c0ac] pb-4 sm:min-h-14 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-xs text-[#705b4c]" aria-live="polite">
                 <span className="font-semibold text-[#27150e]">{totalItems}</span>{" "}
-                {totalItems === 1 ? "result" : "results"} in {activeLabel.toLowerCase()}
+                {totalItems === 1 ? "product" : "products"}
+                {effectiveCategory !== "all" ? <span className="ml-2 border-l border-[#cdbba7] pl-2">{activeLabel}</span> : null}
+                {isSearching ? <span> across all categories</span> : null}
                 {query ? <span> for &ldquo;{query}&rdquo;</span> : null}
               </p>
 
-              <label className="flex items-center gap-3 text-[9px] font-semibold uppercase tracking-[0.15em] text-[#826a57]">
-                <ArrowDownUp size={14} aria-hidden="true" />
-                Sort
-                <span className="relative">
+              <label className="flex items-center gap-3 text-xs font-medium text-[#705b4c]">
+                <span className="flex shrink-0 items-center gap-2"><ArrowDownUp size={15} aria-hidden="true" />Sort by</span>
+                <span className="relative min-w-0 flex-1 sm:flex-none">
                   <select
                     value={sort}
                     onChange={(event) => {
                       setSort(event.target.value as SortValue);
                       setPage(1);
                     }}
-                    className="appearance-none border-b border-[#a48c74] bg-transparent py-2 pl-1 pr-7 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#27150e] outline-none transition-colors focus:border-[#27150e]"
+                    className="min-h-11 w-full cursor-pointer appearance-none rounded-lg border border-[#cdbba7] bg-[#fffaf2] py-2.5 pl-3 pr-10 text-xs font-semibold text-[#27150e] transition-colors hover:border-[#8f5e3b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8f5e3b] sm:w-48"
                   >
                     <option value="featured">Featured</option>
                     <option value="price-asc">Price: low to high</option>
                     <option value="price-desc">Price: high to low</option>
                     <option value="name-asc">Name: A–Z</option>
                   </select>
-                  <ChevronDown size={13} aria-hidden="true" className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-[#826a57]" />
+                  <ChevronDown size={15} aria-hidden="true" className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#826a57]" />
                 </span>
               </label>
             </div>
 
             <div id="catalog-grid" className="scroll-mt-24">
-              {active === "instant-premix" && isCategoryEmpty ? (
+              {effectiveCategory === "instant-premix" && isCategoryEmpty ? (
                 <div className="relative min-h-[360px] overflow-hidden bg-[#20110c]">
                   <div className="absolute inset-0 bg-[url('/images/Roasted-Beans.avif')] bg-cover bg-center opacity-35" />
                   <div className="absolute inset-0 bg-gradient-to-r from-[#20110c] via-[#20110c]/85 to-transparent" />
@@ -421,7 +447,7 @@ function ShopCatalog({ products, urlCategory }: Props & { urlCategory: string | 
                     Show all products
                   </button>
                 </div>
-              ) : active === "instant-premix" ? (
+              ) : effectiveCategory === "instant-premix" ? (
                 <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
                   {visibleGroups.map((group) => (
                     <ProductGroupCard key={group.groupKey} group={group} priority={false} />
@@ -441,7 +467,7 @@ function ShopCatalog({ products, urlCategory }: Props & { urlCategory: string | 
                 page={currentPage}
                 totalPages={totalPages}
                 totalItems={totalItems}
-                itemLabel={active === "instant-premix" ? "collections" : "products"}
+                itemLabel={effectiveCategory === "instant-premix" ? "collections" : "products"}
                 onPageChange={changePage}
               />
             )}
