@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowDownUp, ChevronDown, ChevronLeft, ChevronRight, Search, X } from "lucide-react";
 import { type Product } from "@/types";
 import { ProductCard } from "./ProductCard";
 import { ProductGroupCard } from "./ProductGroupCard";
 import { groupProducts, type ProductGroup } from "@/lib/groupProducts";
 import { CATEGORIES } from "@/lib/categories";
+import { BREWING_EQUIPMENT_CATALOG } from "@/lib/productOptions";
 import { cn } from "@/lib/utils";
 
 const PAGE_SIZE = 9;
@@ -113,6 +114,15 @@ function useDebouncedValue<T>(value: T, delayMs: number): T {
 
 export function ShopClient({ products }: Props) {
   const searchParams = useSearchParams();
+  const urlCategory = searchParams.get("category");
+  return <ShopCatalog key={urlCategory ?? "all"} products={products} urlCategory={urlCategory} />;
+}
+
+const normalizeFilter = (value: string) => value.toLowerCase().replace(/[-_]/g, " ").replace(/\s+/g, " ").trim();
+
+function ShopCatalog({ products, urlCategory }: Props & { urlCategory: string | null }) {
+  const router = useRouter();
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   const categories = useMemo(() => {
     const excludedSlugs = [
@@ -138,13 +148,14 @@ export function ShopClient({ products }: Props) {
     return counts;
   }, [products]);
 
-  const urlCategory = searchParams.get("category");
   const initialActive =
     urlCategory && categories.some((category) => category.value === urlCategory)
       ? urlCategory
       : "all";
 
   const [active, setActive] = useState(initialActive);
+  const [selectedRoasts, setSelectedRoasts] = useState<string[]>([]);
+  const [selectedEquipment, setSelectedEquipment] = useState<string[]>([]);
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<SortValue>("featured");
   const [page, setPage] = useState(1);
@@ -160,12 +171,25 @@ export function ShopClient({ products }: Props) {
     return products.filter((product) => product.category === active);
   }, [active, products]);
 
+  const roastOptions = useMemo(() => {
+    const labels = new Map(["Light", "Medium Light", "Medium", "Medium Dark", "Dark"].map((label) => [normalizeFilter(label), label]));
+    for (const product of products) {
+      if (product.roast?.trim()) labels.set(normalizeFilter(product.roast), labels.get(normalizeFilter(product.roast)) ?? product.roast.trim());
+    }
+    return [...labels.entries()].map(([value, label]) => ({ value, label }));
+  }, [products]);
+  const equipmentOptions = useMemo(() => Array.from(new Set([
+    ...BREWING_EQUIPMENT_CATALOG,
+    ...products.flatMap((product) => product.brewingEquipmentOptions ?? []),
+  ])), [products]);
+
   const filteredProducts = useMemo(() => {
     const normalizedQuery = debouncedQuery.trim().toLocaleLowerCase();
-    if (!normalizedQuery) return categoryProducts;
-
-    return categoryProducts.filter((product) =>
-      [
+    return categoryProducts.filter((product) => {
+      if (selectedRoasts.length && !selectedRoasts.includes(normalizeFilter(product.roast ?? ""))) return false;
+      if (selectedEquipment.length && !selectedEquipment.some((equipment) => product.brewingEquipmentOptions?.includes(equipment))) return false;
+      if (!normalizedQuery) return true;
+      return [
         product.name,
         product.shortDescription,
         product.description,
@@ -179,9 +203,9 @@ export function ShopClient({ products }: Props) {
         ...(product.notes ?? []),
       ]
         .filter((value): value is string => Boolean(value))
-        .some((value) => value.toLocaleLowerCase().includes(normalizedQuery))
-    );
-  }, [categoryProducts, debouncedQuery]);
+        .some((value) => value.toLocaleLowerCase().includes(normalizedQuery));
+    });
+  }, [categoryProducts, debouncedQuery, selectedRoasts, selectedEquipment]);
 
   const sortedProducts = useMemo(() => {
     const result = [...filteredProducts];
@@ -218,6 +242,7 @@ export function ShopClient({ products }: Props) {
   const chooseCategory = (value: string) => {
     setActive(value);
     setPage(1);
+    router.replace(value === "all" ? "/shop#catalog" : `/shop?category=${encodeURIComponent(value)}#catalog`, { scroll: false });
   };
 
   const changePage = (nextPage: number) => {
@@ -231,23 +256,25 @@ export function ShopClient({ products }: Props) {
   };
 
   const resetFilters = () => {
-    setActive("all");
+    chooseCategory("all");
     setQuery("");
     setSort("featured");
+    setSelectedRoasts([]);
+    setSelectedEquipment([]);
     setPage(1);
   };
 
   return (
-    <section id="catalog" className="scroll-mt-16 bg-[#f3ece3]">
+    <section id="catalog" className="scroll-mt-20 bg-[#f3ece3]">
       <div className="mx-auto max-w-[1440px] px-6 py-16 sm:py-20">
         <header className="grid gap-8 lg:grid-cols-[1fr_minmax(360px,0.72fr)] lg:items-end">
           <div>
             <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#8f5e3b]">
               The collection
             </p>
-            <h2 className="max-w-2xl font-serif text-4xl leading-[0.98] tracking-[-0.035em] text-[#27150e] sm:text-5xl">
+            <h1 className="max-w-2xl font-serif text-4xl leading-[0.98] tracking-[-0.035em] text-[#27150e] sm:text-5xl">
               Pick a coffee that fits your ritual.
-            </h2>
+            </h1>
             <p className="mt-4 max-w-xl text-sm leading-6 text-[#705b4c]">
               From slow filter mornings to quick premix breaks, every product is made and packed by our team in Whitefield.
             </p>
@@ -318,86 +345,108 @@ export function ShopClient({ products }: Props) {
           </div>
         </nav>
 
-        <div className="flex flex-col gap-4 py-7 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs text-[#705b4c]" aria-live="polite">
-            <span className="font-semibold text-[#27150e]">{totalItems}</span>{" "}
-            {totalItems === 1 ? "result" : "results"} in {activeLabel.toLowerCase()}
-            {query ? <span> for &ldquo;{query}&rdquo;</span> : null}
-          </p>
+        <div className="mt-8 grid items-start gap-8 lg:grid-cols-[230px_minmax(0,1fr)] lg:gap-10">
+          <button type="button" aria-expanded={mobileFiltersOpen} aria-controls="product-filters" onClick={() => setMobileFiltersOpen((open) => !open)} className="flex items-center justify-between border-y border-[#d2c0ac] py-4 text-xs font-semibold uppercase tracking-widest text-[#27150e] lg:hidden">Filters ({selectedRoasts.length + selectedEquipment.length})<ChevronDown size={16} /></button>
+          <aside id="product-filters" aria-label="Product filters" className={cn("border-y border-[#d2c0ac] lg:sticky lg:top-24 lg:block lg:max-h-[calc(100dvh-7rem)] lg:overflow-y-auto lg:border-y-0 lg:border-r lg:pr-6", !mobileFiltersOpen && "hidden")}>
+            <div className="flex items-center justify-between gap-3 py-4">
+              <h3 className="text-xs font-semibold uppercase tracking-[0.15em] text-[#27150e]">Filters</h3>
+              {(selectedRoasts.length > 0 || selectedEquipment.length > 0) && <button type="button" className="text-xs text-[#8f5e3b] underline underline-offset-4" onClick={() => { setSelectedRoasts([]); setSelectedEquipment([]); setPage(1); }}>Clear all</button>}
+            </div>
+            {[
+              { title: "Roast level", options: roastOptions, selected: selectedRoasts, update: setSelectedRoasts },
+              { title: "Brewing equipment", options: equipmentOptions.map((label) => ({ value: label, label })), selected: selectedEquipment, update: setSelectedEquipment },
+            ].map((filter) => (
+              <details key={filter.title} open className="group border-t border-[#d2c0ac] py-5">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-xs font-semibold uppercase tracking-[0.12em] text-[#27150e] [&::-webkit-details-marker]:hidden">{filter.title}<ChevronDown size={15} className="transition-transform group-open:rotate-180" /></summary>
+                <div className="mt-5 grid gap-3.5">
+                  {filter.options.map((option) => <label key={option.value} className="flex cursor-pointer items-center gap-3 text-sm text-[#4a2818]"><input type="checkbox" checked={filter.selected.includes(option.value)} onChange={() => { filter.update((current) => current.includes(option.value) ? current.filter((value) => value !== option.value) : [...current, option.value]); setPage(1); }} className="h-4 w-4 shrink-0 accent-[#4a2818]" />{option.label}</label>)}
+                </div>
+              </details>
+            ))}
+          </aside>
+          <div className="min-w-0">
+            <div className="flex flex-col gap-4 pb-7 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-xs text-[#705b4c]" aria-live="polite">
+                <span className="font-semibold text-[#27150e]">{totalItems}</span>{" "}
+                {totalItems === 1 ? "result" : "results"} in {activeLabel.toLowerCase()}
+                {query ? <span> for &ldquo;{query}&rdquo;</span> : null}
+              </p>
 
-          <label className="flex items-center gap-3 text-[9px] font-semibold uppercase tracking-[0.15em] text-[#826a57]">
-            <ArrowDownUp size={14} aria-hidden="true" />
-            Sort
-            <span className="relative">
-              <select
-                value={sort}
-                onChange={(event) => {
-                  setSort(event.target.value as SortValue);
-                  setPage(1);
-                }}
-                className="appearance-none border-b border-[#a48c74] bg-transparent py-2 pl-1 pr-7 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#27150e] outline-none transition-colors focus:border-[#27150e]"
-              >
-                <option value="featured">Featured</option>
-                <option value="price-asc">Price: low to high</option>
-                <option value="price-desc">Price: high to low</option>
-                <option value="name-asc">Name: A–Z</option>
-              </select>
-              <ChevronDown size={13} aria-hidden="true" className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-[#826a57]" />
-            </span>
-          </label>
+              <label className="flex items-center gap-3 text-[9px] font-semibold uppercase tracking-[0.15em] text-[#826a57]">
+                <ArrowDownUp size={14} aria-hidden="true" />
+                Sort
+                <span className="relative">
+                  <select
+                    value={sort}
+                    onChange={(event) => {
+                      setSort(event.target.value as SortValue);
+                      setPage(1);
+                    }}
+                    className="appearance-none border-b border-[#a48c74] bg-transparent py-2 pl-1 pr-7 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#27150e] outline-none transition-colors focus:border-[#27150e]"
+                  >
+                    <option value="featured">Featured</option>
+                    <option value="price-asc">Price: low to high</option>
+                    <option value="price-desc">Price: high to low</option>
+                    <option value="name-asc">Name: A–Z</option>
+                  </select>
+                  <ChevronDown size={13} aria-hidden="true" className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-[#826a57]" />
+                </span>
+              </label>
+            </div>
+
+            <div id="catalog-grid" className="scroll-mt-24">
+              {active === "instant-premix" && isCategoryEmpty ? (
+                <div className="relative min-h-[360px] overflow-hidden bg-[#20110c]">
+                  <div className="absolute inset-0 bg-[url('/images/Roasted-Beans.avif')] bg-cover bg-center opacity-35" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#20110c] via-[#20110c]/85 to-transparent" />
+                  <div className="relative z-10 max-w-xl px-8 py-20 text-[#fffaf2] sm:px-14">
+                    <p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#d7a35f]">Coming soon</p>
+                    <h3 className="font-serif text-4xl tracking-[-0.03em]">A quicker cup is brewing.</h3>
+                    <p className="mt-5 text-sm leading-7 text-[#fffaf2]/65">
+                      Our instant premix collection is being prepared. Check back soon for chai, coffee and malt blends.
+                    </p>
+                  </div>
+                </div>
+              ) : isSearchEmpty || isCategoryEmpty || totalItems === 0 ? (
+                <div className="border-y border-[#cdbba7] py-20 text-center">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#9b6a3c]">Nothing on this shelf</p>
+                  <h3 className="mt-4 font-serif text-3xl text-[#20110c]">
+                    Try a different search or collection.
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={resetFilters}
+                    className="mt-7 border-b border-[#4a2818] pb-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#4a2818] transition-colors hover:text-[#9b6a3c]"
+                  >
+                    Show all products
+                  </button>
+                </div>
+              ) : active === "instant-premix" ? (
+                <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+                  {visibleGroups.map((group) => (
+                    <ProductGroupCard key={group.groupKey} group={group} priority={false} />
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+                  {visibleProducts.map((product) => (
+                    <ProductCard key={product.id} product={product} priority={false} />
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {!isCategoryEmpty && !isSearchEmpty && totalItems > 0 && (
+              <ShopPagination
+                page={currentPage}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                itemLabel={active === "instant-premix" ? "collections" : "products"}
+                onPageChange={changePage}
+              />
+            )}
+          </div>
         </div>
-
-        <div id="catalog-grid" className="scroll-mt-24">
-          {active === "instant-premix" && isCategoryEmpty ? (
-            <div className="relative min-h-[360px] overflow-hidden bg-[#20110c]">
-              <div className="absolute inset-0 bg-[url('/images/Roasted-Beans.avif')] bg-cover bg-center opacity-35" />
-              <div className="absolute inset-0 bg-gradient-to-r from-[#20110c] via-[#20110c]/85 to-transparent" />
-              <div className="relative z-10 max-w-xl px-8 py-20 text-[#fffaf2] sm:px-14">
-                <p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#d7a35f]">Coming soon</p>
-                <h3 className="font-serif text-4xl tracking-[-0.03em]">A quicker cup is brewing.</h3>
-                <p className="mt-5 text-sm leading-7 text-[#fffaf2]/65">
-                  Our instant premix collection is being prepared. Check back soon for chai, coffee and malt blends.
-                </p>
-              </div>
-            </div>
-          ) : isSearchEmpty || isCategoryEmpty || totalItems === 0 ? (
-            <div className="border-y border-[#cdbba7] py-20 text-center">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#9b6a3c]">Nothing on this shelf</p>
-              <h3 className="mt-4 font-serif text-3xl text-[#20110c]">
-                Try a different search or collection.
-              </h3>
-              <button
-                type="button"
-                onClick={resetFilters}
-                className="mt-7 border-b border-[#4a2818] pb-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#4a2818] transition-colors hover:text-[#9b6a3c]"
-              >
-                Show all products
-              </button>
-            </div>
-          ) : active === "instant-premix" ? (
-            <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
-              {visibleGroups.map((group) => (
-                <ProductGroupCard key={group.groupKey} group={group} priority={false} />
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
-              {visibleProducts.map((product) => (
-                <ProductCard key={product.id} product={product} priority={false} />
-              ))}
-            </div>
-          )}
-        </div>
-
-        {!isCategoryEmpty && !isSearchEmpty && totalItems > 0 && (
-          <ShopPagination
-            page={currentPage}
-            totalPages={totalPages}
-            totalItems={totalItems}
-            itemLabel={active === "instant-premix" ? "collections" : "products"}
-            onPageChange={changePage}
-          />
-        )}
       </div>
     </section>
   );

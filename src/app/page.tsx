@@ -7,8 +7,6 @@ import { BrandStory } from "@/components/home/BrandStory";
 import { VideoQuote } from "@/components/home/VideoQuote";
 import { Testimonials } from "@/components/home/Testimonials";
 import { PartnerMarquee } from "@/components/home/PartnerMarquee";
-import { ValueStrip } from "@/components/home/ValueStrip";
-import { ShopByCategory } from "@/components/home/ShopByCategory";
 import { getFeaturedProducts } from "@/lib/products";
 
 export default async function HomePage() {
@@ -20,8 +18,6 @@ export default async function HomePage() {
       <CartDrawer />
       <main data-gentle-motion>
         <Hero />
-        <ValueStrip />
-        <ShopByCategory />
         <FeaturedProducts products={featured} />
         <BrandStory />
         <VideoQuote />
