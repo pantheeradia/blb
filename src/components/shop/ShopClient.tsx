@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { LoadingImage as Image } from "@/components/LoadingImage";
+import { CategoryVisual } from "./CategoryVisual";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowDownUp, ChevronDown, ChevronLeft, ChevronRight, LoaderCircle, Search, X } from "lucide-react";
 import { type Product } from "@/types";
@@ -9,18 +9,12 @@ import { ProductCard } from "./ProductCard";
 import { ProductGroupCard } from "./ProductGroupCard";
 import { groupProducts, type ProductGroup } from "@/lib/groupProducts";
 import { CATEGORIES } from "@/lib/categories";
+import { STOREFRONT_CATEGORIES } from "@/lib/storefrontCategories";
 import { BREWING_EQUIPMENT_CATALOG } from "@/lib/productOptions";
 import { cn } from "@/lib/utils";
 
 const PAGE_SIZE = 9;
 
-const COLLECTION_DETAILS: Record<string, { image: string; background: string }> = {
-  all: { image: "/images/Roasted-Beans.avif", background: "bg-[#e9dfd2]" },
-  "ground-coffee": { image: "/images/front-page-ground-coffee.png", background: "bg-[#f0e0d7]" },
-  "whole-bean": { image: "/images/front-page-whole-bean.png", background: "bg-[#e1e7dc]" },
-  "instant-premix": { image: "/images/DSC5479.webp", background: "bg-[#f5e7cc]" },
-  "filter-coffee-decoction": { image: "/images/GC_Beans_01.webp", background: "bg-[#e5dfe9]" },
-};
 
 type SortValue = "featured" | "price-asc" | "price-desc" | "name-asc";
 
@@ -133,21 +127,11 @@ function ShopCatalog({ products, urlCategory }: Props & { urlCategory: string | 
   const router = useRouter();
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
-  const categories = useMemo(() => {
-    const excludedSlugs = [
-      "non-milk-tea",
-      "milk-tea",
-      "matcha-tea",
-      "malt-protein",
-      "merchandise-accessories",
-    ];
-    const filteredCategories = CATEGORIES.filter((category) => !excludedSlugs.includes(category.slug));
-
-    return [
-      { label: "All products", value: "all" },
-      ...filteredCategories.map((category) => ({ label: category.name, value: category.slug })),
-    ];
-  }, []);
+  const categories = useMemo(() => [
+    { label: "All products", value: "all" },
+    ...STOREFRONT_CATEGORIES.map((category) => ({ label: category.name, value: category.slug })),
+    ...CATEGORIES.filter((category) => !STOREFRONT_CATEGORIES.some((item) => item.slug === category.slug)).map((category) => ({ label: category.name, value: category.slug })),
+  ], []);
 
   const initialActive =
     urlCategory && categories.some((category) => category.value === urlCategory)
@@ -228,6 +212,7 @@ function ShopCatalog({ products, urlCategory }: Props & { urlCategory: string | 
   }, [sort, sortedProducts]);
 
   const isCategoryEmpty = categoryProducts.length === 0;
+  const upcomingCategory = STOREFRONT_CATEGORIES.find((category) => category.slug === effectiveCategory && category.comingSoon);
   const isSearchEmpty = sortedProducts.length === 0 && isSearching;
   const totalItems = effectiveCategory === "instant-premix" ? instantPremixGroups.length : sortedProducts.length;
   const totalPages = Math.ceil(totalItems / PAGE_SIZE);
@@ -322,50 +307,20 @@ function ShopCatalog({ products, urlCategory }: Props & { urlCategory: string | 
           </div>
         </header>
 
-        <nav aria-label="Product collections" className="mt-7 border-b border-[#d2c0ac] pb-5 sm:mt-8 sm:pb-7">
-          <div className="mx-auto grid max-w-4xl grid-cols-2 justify-items-center gap-x-4 gap-y-5 px-2 py-2 min-[480px]:grid-cols-3 sm:grid-cols-5 sm:gap-x-8">
+        <nav aria-label="Product collections" className="mt-7 border-b border-[#d2c0ac] pb-5 sm:mt-8">
+          <div className="flex snap-x snap-mandatory gap-5 overflow-x-auto px-2 py-3 sm:gap-6">
             {categories.map((category) => {
               const selected = effectiveCategory === category.value;
-              const details = COLLECTION_DETAILS[category.value] ?? COLLECTION_DETAILS.all;
-              const image = ["instant-premix", "filter-coffee-decoction"].includes(category.value)
-                ? products.find((product) => product.category === category.value && product.images.some(Boolean))?.images.find(Boolean) ?? details.image
-                : details.image;
+              const visual = STOREFRONT_CATEGORIES.find((item) => item.slug === category.value) ?? { slug: category.value, name: category.label, icon: "coffee" as const, comingSoon: false, image: category.value === "all" ? "/images/Roasted-Beans.avif" : undefined };
+              const image = visual.comingSoon ? undefined : products.find((product) => product.category === category.value && product.images.some(Boolean))?.images.find(Boolean);
               return (
-              <button
-                key={category.value}
-                type="button"
-                onClick={() => chooseCategory(category.value)}
-                aria-pressed={selected}
-                className={cn(
-                  "group flex w-full max-w-36 flex-col items-center gap-3 rounded-lg text-center focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#8f5e3b]",
-                  selected ? "text-[#4a2818]" : "text-[#705b4c] hover:text-[#4a2818]"
-                )}
-              >
-                <span className={cn(
-                  "relative flex h-24 w-24 items-center justify-center rounded-full transition-all duration-200 motion-reduce:transition-none sm:h-28 sm:w-28",
-                  details.background,
-                  selected
-                    ? "ring-2 ring-[#8f5e3b] ring-offset-4 ring-offset-[#f3ece3]"
-                    : "ring-1 ring-transparent group-hover:ring-[#b99b7d] group-hover:ring-offset-4 group-hover:ring-offset-[#f3ece3]"
-                )}>
-                  <span className="relative h-full w-full overflow-hidden rounded-full">
-                    <Image
-                      src={image}
-                      alt=""
-                      fill
-                      sizes="(min-width: 640px) 112px, 96px"
-                      className={cn(
-                        "transition-transform duration-200 motion-reduce:transition-none",
-                        ["instant-premix", "filter-coffee-decoction"].includes(category.value)
-                          ? "object-cover"
-                          : "object-contain p-3 mix-blend-multiply",
-                        selected ? "scale-105" : "group-hover:scale-105"
-                      )}
-                    />
+                <button key={category.value} type="button" onClick={() => chooseCategory(category.value)} aria-pressed={selected}
+                  className={cn("group flex w-24 shrink-0 snap-start flex-col items-center gap-3 rounded-lg text-center focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#8f5e3b]", selected ? "text-[#4a2818]" : "text-[#705b4c]")}>
+                  <span className={cn("relative h-20 w-20 overflow-hidden rounded-full border border-[#dfcfbb] bg-[#eee3d2] transition-shadow", selected ? "ring-2 ring-[#8f5e3b] ring-offset-4 ring-offset-[#f3ece3]" : "group-hover:ring-1 group-hover:ring-[#b99b7d]")}>
+                    <CategoryVisual category={visual} image={image} sizes="80px" />
                   </span>
-                </span>
-                <span className={cn("min-h-10 max-w-36 text-[13px] leading-5", selected ? "font-semibold text-[#4a2818]" : "font-medium")}>{category.label}</span>
-              </button>
+                  <span className={cn("min-h-10 text-xs leading-5", selected ? "font-semibold" : "font-medium")}>{category.label}</span>
+                </button>
               );
             })}
           </div>
@@ -433,6 +388,13 @@ function ShopCatalog({ products, urlCategory }: Props & { urlCategory: string | 
                       Our instant premix collection is being prepared. Check back soon for chai, coffee and malt blends.
                     </p>
                   </div>
+                </div>
+              ) : isCategoryEmpty && upcomingCategory ? (
+                <div className="rounded-xl border border-[#ddcbb5] bg-[#faf6ef] px-6 py-16 text-center">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#9b6a3c]">Coming soon</p>
+                  <h3 className="mt-4 font-serif text-3xl text-[#302016]">{upcomingCategory.name} is on its way.</h3>
+                  <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-[#76604c]">We&apos;re preparing the HOYYA collection. In the meantime, explore freshly roasted coffee from Bean Leaf Brew.</p>
+                  <button type="button" onClick={resetFilters} className="mt-6 min-h-11 rounded-lg bg-[#38251a] px-6 text-xs font-medium text-[#fffaf2] transition-colors hover:bg-[#805536]">Explore available products</button>
                 </div>
               ) : isSearchEmpty || isCategoryEmpty || totalItems === 0 ? (
                 <div className="border-y border-[#cdbba7] py-20 text-center">

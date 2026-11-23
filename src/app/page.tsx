@@ -2,6 +2,7 @@ import { Nav } from "@/components/layout/Nav";
 import { Footer } from "@/components/layout/Footer";
 import { CartDrawer } from "@/components/layout/CartDrawer";
 import { Hero } from "@/components/home/Hero";
+import { ShopByCategory } from "@/components/home/ShopByCategory";
 import { FeaturedProducts } from "@/components/home/FeaturedProducts";
 import { BrandStory } from "@/components/home/BrandStory";
 import { VideoQuote } from "@/components/home/VideoQuote";
@@ -28,12 +29,13 @@ export default async function HomePage() {
       <CartDrawer />
       <main data-gentle-motion>
         <Hero />
+        <ShopByCategory products={catalog} />
         <FeaturedProducts products={bestsellers} />
         <BrandStory />
         <VideoQuote />
         <Testimonials />
-        <VideoSection />
         <PartnerMarquee />
+        <VideoSection />
       </main>
       <Footer />
     </>

@@ -7,17 +7,14 @@ import Image from "next/image";
 import { ShoppingBag, Menu, X, ChevronDown, ArrowUpRight } from "lucide-react";
 import { useCartStore } from "@/store/cart";
 import { cn } from "@/lib/utils";
+import { STOREFRONT_CATEGORIES, collectionHref } from "@/lib/storefrontCategories";
+import { CategoryVisual } from "@/components/shop/CategoryVisual";
 
 const links = [
   { label: "About", href: "/about" },
   { label: "Contact", href: "/contact" },
 ];
-const shopLinks = [
-  { label: "Ground Coffee", href: "/shop?category=ground-coffee#catalog", image: "/images/front-page-ground-coffee.png" },
-  { label: "Whole Bean", href: "/shop?category=whole-bean#catalog", image: "/images/front-page-whole-bean.png" },
-  { label: "Instant Premix", href: "/shop?category=instant-premix#catalog", image: "/images/Instant-Premix.avif" },
-  { label: "Filter Coffee Decoction", href: "/shop?category=filter-coffee-decoction#catalog", image: "/images/GC_Beans_01.webp" },
-];
+const shopLinks = STOREFRONT_CATEGORIES.map((category) => ({ ...category, label: category.name, href: collectionHref(category.slug) }));
 const navLinkClass = "relative py-2 text-[11px] font-medium uppercase tracking-[0.18em] text-[#4a2818] transition-colors hover:text-[#9b6a3c] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#9b6a3c]";
 
 export function Nav() {
@@ -78,14 +75,8 @@ export function Nav() {
                       onClick={closeMenus}
                       className="group flex items-center gap-3 p-2 text-[11px] uppercase tracking-[0.06em] text-[#20110c] transition-colors hover:bg-[#e2d2bf] focus-visible:bg-[#e2d2bf] focus-visible:outline-2 focus-visible:outline-[#9b6a3c]"
                     >
-                      <Image
-                        src={link.image}
-                        alt=""
-                        width={48}
-                        height={48}
-                        className="h-12 w-12 shrink-0 object-cover"
-                      />
-                      <span className="flex-1">{link.label}</span>
+                      <span className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full bg-[#eee3d2]"><CategoryVisual category={link} sizes="48px" /></span>
+                      <span className="flex-1">{link.label}{link.comingSoon && <span className="mt-1 block text-[8px] tracking-widest text-[#987e61]">Coming soon</span>}</span>
                       <ArrowUpRight size={16} className="shrink-0 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
                     </Link>
                   ))}
@@ -108,7 +99,7 @@ export function Nav() {
       {mobileOpen && (
         <div id="mobile-navigation" className="max-h-[calc(100dvh-5rem)] overflow-y-auto border-t border-[#20110c]/10 bg-[#fffaf3] px-6 py-4 md:hidden">
           <button type="button" onClick={() => setShopOpen((value) => !value)} aria-expanded={shopOpen} aria-controls="mobile-shop-menu" className="flex w-full items-center justify-between py-3 text-xs uppercase tracking-widest text-[#20110c]">Shop<ChevronDown size={16} className={cn("transition-transform", shopOpen && "rotate-180")} /></button>
-          {shopOpen && <div id="mobile-shop-menu" className="mb-3 border-l border-[#d4c4b0] pl-4">{shopLinks.map((link) => <Link key={link.href} href={link.href} onClick={closeMenus} className="flex items-center gap-4 py-2 text-xs uppercase tracking-wide text-[#4a2818]"><Image src={link.image} alt="" width={48} height={48} className="h-12 w-12 object-cover" />{link.label}</Link>)}</div>}
+          {shopOpen && <div id="mobile-shop-menu" className="mb-3 border-l border-[#d4c4b0] pl-4">{shopLinks.map((link) => <Link key={link.href} href={link.href} onClick={closeMenus} className="flex items-center gap-4 py-2 text-xs uppercase tracking-wide text-[#4a2818]"><span className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full bg-[#eee3d2]"><CategoryVisual category={link} sizes="48px" /></span>{link.label}</Link>)}</div>}
           {links.map((link) => <Link key={link.href} href={link.href} onClick={closeMenus} className="block py-3 text-xs uppercase tracking-widest text-[#4a2818]">{link.label}</Link>)}
         </div>
       )}

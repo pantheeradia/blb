@@ -18,7 +18,7 @@ export interface Category {
 export const CATEGORIES: Category[] = [
   {
     slug: "ground-coffee",
-    name: "Ground Coffee",
+    name: "Roasted & Ground Coffee",
     showWeight: true,
     showRoast: true,
     showBlend: true,
@@ -26,7 +26,7 @@ export const CATEGORIES: Category[] = [
   },
   {
     slug: "whole-bean",
-    name: "Whole Bean",
+    name: "Whole beans",
     showWeight: true,
     showRoast: true,
     showBlend: true,
@@ -42,7 +42,7 @@ export const CATEGORIES: Category[] = [
   },
   {
     slug: "filter-coffee-decoction",
-    name: "Filter Coffee Decoction",
+    name: "Coffee Concentrate",
     showWeight: true,
     showRoast: true,
     showBlend: true,
@@ -50,12 +50,16 @@ export const CATEGORIES: Category[] = [
   },
   {
     slug: "merchandise-accessories",
-    name: "Merchandise & Accessories",
+    name: "Merchandise",
     showWeight: false,
     showRoast: false,
     showBlend: false,
     showNotes: false,
   },
+  { slug: "hoyya-tea", name: "HOYYA Tea", showWeight: true, showRoast: false, showBlend: false, showNotes: true },
+  { slug: "hoyya-protein", name: "HOYYA Protein", showWeight: true, showRoast: false, showBlend: false, showNotes: true },
+  { slug: "hoyya-matcha", name: "HOYYA Matcha", showWeight: true, showRoast: false, showBlend: false, showNotes: true },
+  { slug: "gifting", name: "Gifting", showWeight: false, showRoast: false, showBlend: false, showNotes: false },
 ];
 
 const BY_SLUG: Record<string, Category> = Object.fromEntries(
