@@ -80,7 +80,7 @@ export default async function ProductPage({ params }: Props) {
                 </div>
               )}
 
-              <Suspense fallback={<div className="h-10" />}>
+              <Suspense fallback={<div role="status" aria-busy="true" className="h-12 animate-pulse bg-[#ead9c8] motion-reduce:animate-none"><span className="sr-only">Loading product options...</span></div>}>
                 <ProductActions product={product} />
               </Suspense>
 

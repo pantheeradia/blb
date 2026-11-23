@@ -23,12 +23,12 @@ export function ChangePassword() {
     }
 
     setSaving(true);
+    try {
     const res = await fetch("/api/admin/account/password", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ currentPassword, newPassword }),
     });
-    setSaving(false);
 
     if (res.ok) {
       setMessage({ type: "ok", text: "Password updated." });
@@ -38,6 +38,11 @@ export function ChangePassword() {
     } else {
       const data = await res.json().catch(() => ({}));
       setMessage({ type: "err", text: data.error ?? "Could not update password." });
+    }
+    } catch {
+      setMessage({ type: "err", text: "Could not update password. Please try again." });
+    } finally {
+      setSaving(false);
     }
   }
 

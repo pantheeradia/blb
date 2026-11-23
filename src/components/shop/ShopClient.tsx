@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Image from "next/image";
+import { LoadingImage as Image } from "@/components/LoadingImage";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowDownUp, ChevronDown, ChevronLeft, ChevronRight, Search, X } from "lucide-react";
+import { ArrowDownUp, ChevronDown, ChevronLeft, ChevronRight, LoaderCircle, Search, X } from "lucide-react";
 import { type Product } from "@/types";
 import { ProductCard } from "./ProductCard";
 import { ProductGroupCard } from "./ProductGroupCard";
@@ -161,6 +161,7 @@ function ShopCatalog({ products, urlCategory }: Props & { urlCategory: string | 
   const [sort, setSort] = useState<SortValue>("featured");
   const [page, setPage] = useState(1);
   const debouncedQuery = useDebouncedValue(query, 200);
+  const searchPending = query !== debouncedQuery;
   const isSearching = debouncedQuery.trim().length > 0;
   const effectiveCategory = isSearching ? "all" : active;
 
@@ -285,7 +286,7 @@ function ShopCatalog({ products, urlCategory }: Props & { urlCategory: string | 
               Search products
             </label>
             <div className="flex items-center rounded-lg border border-[#d2c0ac] bg-[#faf6ef] px-3 transition-colors focus-within:border-[#8f5e3b]">
-              <Search size={17} aria-hidden="true" className="shrink-0 text-[#876b55]" />
+              {searchPending ? <LoaderCircle size={17} aria-label="Searching" role="status" className="shrink-0 animate-spin text-[#876b55] motion-reduce:animate-none" /> : <Search size={17} aria-hidden="true" className="shrink-0 text-[#876b55]" />}
               <input
                 id="shop-search"
                 type="search"
@@ -420,7 +421,7 @@ function ShopCatalog({ products, urlCategory }: Props & { urlCategory: string | 
               </label>
             </div>
 
-            <div id="catalog-grid" className="scroll-mt-24">
+            <div id="catalog-grid" aria-busy={searchPending} className="scroll-mt-24">
               {effectiveCategory === "instant-premix" && isCategoryEmpty ? (
                 <div className="relative min-h-[360px] overflow-hidden bg-[#20110c]">
                   <div className="absolute inset-0 bg-[url('/images/Roasted-Beans.avif')] bg-cover bg-center opacity-35" />

@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { LoadingImage as Image } from "@/components/LoadingImage";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { getProductBySlug } from "@/lib/products";

@@ -12,21 +12,29 @@ export function InvoiceSection({ orderId, currentInvoiceNumber }: Props) {
   const [editing, setEditing] = useState(!currentInvoiceNumber);
   const [value, setValue] = useState(currentInvoiceNumber ?? "");
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
   const router = useRouter();
 
   async function saveAndOpen() {
     const trimmed = value.trim();
-    if (!trimmed) return;
+    if (saving || !trimmed) return;
     setSaving(true);
-    await fetch(`/api/admin/orders/${orderId}`, {
+    setError("");
+    try {
+    const response = await fetch(`/api/admin/orders/${orderId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ invoiceNumber: trimmed }),
     });
-    setSaving(false);
+    if (!response.ok) throw new Error("Save failed");
     setEditing(false);
     router.refresh();
     window.open(`/admin/orders/${orderId}/invoice`, "_blank");
+    } catch {
+      setError("Could not save the invoice number. Please try again.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
@@ -69,7 +77,8 @@ export function InvoiceSection({ orderId, currentInvoiceNumber }: Props) {
   }
 
   return (
-    <div>
+    <div aria-busy={saving}>
+      {error && <p role="alert" className="mb-2 text-xs text-red-400">{error}</p>}
       <p className="text-gray-500 text-xs mb-2">
         {currentInvoiceNumber ? "Update invoice number:" : "No invoice number assigned yet. Enter one to generate the invoice."}
       </p>

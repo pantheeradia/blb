@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
+import { LoadingImage as Image } from "@/components/LoadingImage";
 
 export function BrandStory() {
   return (

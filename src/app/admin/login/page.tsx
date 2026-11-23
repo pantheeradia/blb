@@ -15,6 +15,7 @@ export default function AdminLoginPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
+    try {
     const res = await fetch("/api/admin/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -27,15 +28,25 @@ export default function AdminLoginPage() {
       setError("Invalid password.");
       setLoading(false);
     }
+    } catch {
+      setError("Could not sign in. Please try again.");
+      setLoading(false);
+    }
   }
 
   async function handleForgot() {
     setResetting(true);
     setResetMsg("");
     setError("");
-    await fetch("/api/admin/account/forgot", { method: "POST" });
-    setResetting(false);
+    try {
+    const response = await fetch("/api/admin/account/forgot", { method: "POST" });
+    if (!response.ok) throw new Error("Request failed");
     setResetMsg("If an admin email is configured, a reset link has been sent.");
+    } catch {
+      setError("Could not request a reset link. Please try again.");
+    } finally {
+      setResetting(false);
+    }
   }
 
   return (

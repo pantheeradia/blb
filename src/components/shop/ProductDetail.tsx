@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
-import Image from "next/image";
+import { LoadingImage as Image } from "@/components/LoadingImage";
 import { type Product } from "@/types";
 import { INSTANT_PREMIX_CATEGORY } from "@/lib/instantPremixOptions";
 import { formatPrice } from "@/lib/utils";

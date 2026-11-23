@@ -28,12 +28,12 @@ function ResetForm() {
     }
 
     setLoading(true);
+    try {
     const res = await fetch("/api/admin/account/reset", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ token, newPassword }),
     });
-    setLoading(false);
 
     if (res.ok) {
       setDone(true);
@@ -41,6 +41,11 @@ function ResetForm() {
     } else {
       const data = await res.json().catch(() => ({}));
       setError(data.error ?? "Could not reset password.");
+    }
+    } catch {
+      setError("Could not reset password. Please try again.");
+    } finally {
+      setLoading(false);
     }
   }
 

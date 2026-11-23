@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
+import { LoadingImage as Image } from "@/components/LoadingImage";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface Props {

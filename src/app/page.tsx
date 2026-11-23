@@ -6,6 +6,7 @@ import { FeaturedProducts } from "@/components/home/FeaturedProducts";
 import { BrandStory } from "@/components/home/BrandStory";
 import { VideoQuote } from "@/components/home/VideoQuote";
 import { Testimonials } from "@/components/home/Testimonials";
+import { VideoSection } from "@/components/home/VideoSection";
 import { PartnerMarquee } from "@/components/home/PartnerMarquee";
 import { getFeaturedProducts } from "@/lib/products";
 
@@ -22,6 +23,7 @@ export default async function HomePage() {
         <BrandStory />
         <VideoQuote />
         <Testimonials />
+        <VideoSection />
         <PartnerMarquee />
       </main>
       <Footer />

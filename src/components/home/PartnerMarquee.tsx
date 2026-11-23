@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { LoadingImage as Image } from "@/components/LoadingImage";
 import partners from "@/data/partners.json";
 
 export function PartnerMarquee() {
