@@ -8,10 +8,10 @@ export function PartnerMarquee() {
   const marqueePartners = [...partners, ...partners];
 
   return (
-    <section className="bg-blb-white py-16 overflow-hidden">
+    <section className="bg-cream py-16 overflow-hidden">
       <div className="max-w-7xl mx-auto px-6 mb-10">
         <div className="reveal-on-scroll text-center">
-          <p className="text-[10px] uppercase tracking-[0.2em] text-gold mb-2">
+          <p className="text-[10px] uppercase tracking-[0.2em] text-[#79502c] mb-2">
             Our Partners
           </p>
           <h2 className="font-serif text-2xl md:text-4xl text-espresso">
@@ -22,8 +22,8 @@ export function PartnerMarquee() {
 
       <div className="relative overflow-hidden">
         {/* Fade masks for smooth edges */}
-        <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-blb-white to-transparent z-10 pointer-events-none" />
-        <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-blb-white to-transparent z-10 pointer-events-none" />
+        <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-cream to-transparent z-10 pointer-events-none" />
+        <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-cream to-transparent z-10 pointer-events-none" />
 
         {/* Marquee container */}
         <div className="relative w-full">
