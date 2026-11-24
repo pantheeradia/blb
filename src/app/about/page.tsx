@@ -2,6 +2,8 @@ import Image from "next/image";
 import { Nav } from "@/components/layout/Nav";
 import { Footer } from "@/components/layout/Footer";
 import { CartDrawer } from "@/components/layout/CartDrawer";
+import TimelineBlock01 from "@/components/ui/timeline-01";
+import { HoyyaEducation } from "@/components/home/HoyyaEducation";
 
 export const metadata = {
   title: "About - Bean Leaf Brew",
@@ -29,45 +31,10 @@ export default function AboutPage() {
           </div>
         </section>
 
-        <div className="max-w-6xl mx-auto px-6 py-12 sm:px-8 sm:py-16">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
-            <div>
-              <h2 className="font-serif text-3xl text-[#1A0E08] mb-6">
-                Born in Whitefield,<br/>Brewed with Purpose.
-              </h2>
-              <div className="space-y-4 text-sm text-[#4A2512] leading-relaxed">
-                <p>
-                  Bean Leaf Brew started as a passion project in a small roastery in Whitefield, Bengaluru.
-                  We wanted to bring the quality of specialty coffee that you&apos;d find in the best cafes directly
-                  to your doorstep — without the café markup.
-                </p>
-                <p>
-                  We source directly from award-winning estates in Coorg and Chikmagalur, Karnataka —
-                  grown at elevations of 3,100 to 4,000 ft. Every batch is freshly profile-roasted
-                  in-house using state-of-the-art technology, then packed immediately to lock in
-                  the aroma and freshness.
-                </p>
-                <p>
-                  No middlemen. No stale stock. Just coffee that&apos;s honest and alive.
-                  Anytime. Anywhere.
-                </p>
-              </div>
-            </div>
+        <TimelineBlock01 />
 
-            <div className="relative">
-              <div className="relative h-80 overflow-hidden">
-                <Image
-                  src="/images/hero-image.jpeg"
-                  alt="Bean Leaf Brew cafe storefront"
-                  fill
-                  sizes="(min-width: 768px) 50vw, 100vw"
-                  className="object-cover object-center"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+        <div className="mx-auto max-w-7xl px-4 py-10 md:px-8 lg:px-12">
+          <div className="grid grid-cols-1 gap-4 text-center md:grid-cols-3">
             {[
               { stat: "3,100 – 4,000 ft", label: "Estate Altitude" },
               { stat: "100%", label: "Freshly Roasted" },
@@ -80,6 +47,7 @@ export default function AboutPage() {
             ))}
           </div>
         </div>
+        <HoyyaEducation />
       </main>
       <Footer />
     </>

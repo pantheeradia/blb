@@ -75,37 +75,34 @@ export function CircularTestimonials({ testimonials, autoplay = true, label = "T
       const from = cardPosition(index, selected, count, gap);
       const to = cardPosition(index, next, count, gap);
       let frames: Keyframe[] = [from, to];
-      if (reduceMotion) {
-        // Keep a brief crossfade for reduced-motion preferences.
-        frames = [{ ...to, opacity: 0.45 }, to];
-      } else if (index === selected) {
-        const sweep = Math.min(190, containerWidth * 0.46) * -direction;
-        const outside = `translateX(${sweep}px) translateY(-12px) scale(0.94) rotate(${-direction * 14}deg)`;
+      if (index === selected) {
+        // Tuck the front card into the stack without sweeping sideways.
+        // Shrinking first exposes the incoming card before the depth handoff.
+        const tucked = `translateX(0px) translateY(${reduceMotion ? -12 : -36}px) scale(${reduceMotion ? 0.94 : 0.84}) rotate(${-direction * (reduceMotion ? 1 : 6)}deg)`;
         frames = [
           { ...from, zIndex: 4, offset: 0 },
-          { transform: outside, opacity: 1, zIndex: 4, offset: 0.44 },
-          { transform: outside, opacity: 1, zIndex: 1, offset: 0.46 },
+          { transform: tucked, opacity: 1, zIndex: 4, offset: 0.38 },
+          { transform: tucked, opacity: 1, zIndex: 2, offset: 0.40 },
           { ...to, offset: 1 },
         ];
       } else if (index === next) {
         frames = [
           { ...from, zIndex: 2, offset: 0 },
-          { transform: `translateX(${direction * gap * 0.35}px) translateY(-10px) scale(0.97) rotate(${direction * 2}deg)`, opacity: 1, zIndex: 3, offset: 0.46 },
+          { transform: `translateX(${direction * gap * 0.2}px) translateY(${reduceMotion ? 0 : 10}px) scale(${reduceMotion ? 1 : 1.025}) rotate(0deg)`, opacity: 1, zIndex: 3, offset: 0.60 },
           { ...to, zIndex: 3, offset: 1 },
         ];
       }
       animationsRef.current.push(card.animate(frames, {
-        duration: reduceMotion ? 180 : 900,
-        easing: "cubic-bezier(0.4, 0, 0.2, 1)",
+        duration: reduceMotion ? 450 : 850,
+        easing: "cubic-bezier(0.22, 1, 0.36, 1)",
       }));
     });
-    // Explicit keyframes preserve the outgoing card's depth until it clears
-    // the stack; switching z-index immediately would hide the entire motion.
+    // The outgoing card stays in front until it shrinks into the stack.
     setActiveIndex(next);
     void Promise.allSettled(animationsRef.current.map((animation) => animation.finished)).then(() => {
       animatingRef.current = false;
     });
-  }, [count, selected, gap, containerWidth, reduceMotion]);
+  }, [count, selected, gap, reduceMotion]);
 
   useEffect(() => () => {
     animationsRef.current.forEach((animation) => animation.cancel());

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { MapPin } from "lucide-react";
 import { LoadingImage as Image } from "@/components/LoadingImage";
 
 export function BrandStory() {
@@ -37,12 +38,22 @@ export function BrandStory() {
               packed immediately after roasting to lock in the aroma and freshness
               you deserve.
             </p>
-            <Link
-              href="/about"
-              className="text-xs uppercase tracking-widest text-[#C9953C] border-b border-[#C9953C] pb-0.5 hover:opacity-80 transition-opacity"
-            >
-              Read our story →
-            </Link>
+            <div className="flex flex-wrap items-center gap-x-8 gap-y-4">
+              <Link
+                href="/about"
+                className="text-xs uppercase tracking-widest text-[#C9953C] border-b border-[#C9953C] pb-0.5 hover:opacity-80 transition-opacity"
+              >
+                Read our story →
+              </Link>
+              <button
+                type="button"
+                disabled
+                className="inline-flex items-center gap-2 border-b border-[#C9953C] pb-0.5 text-xs uppercase tracking-widest text-[#C9953C]"
+              >
+                <MapPin size={14} aria-hidden="true" />
+                Find BLB Near You
+              </button>
+            </div>
           </div>
         </div>
       </div>

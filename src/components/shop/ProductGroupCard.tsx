@@ -182,7 +182,7 @@ export function ProductGroupCard({ group, priority = false }: Props) {
           >
             Choose a blend
           </label>
-          <div className="relative border-b border-[#b9a48f]">
+          <div className="relative">
             <select
               id={"variant-" + group.groupKey}
               value={selectedVariantIndex}
@@ -191,7 +191,7 @@ export function ProductGroupCard({ group, priority = false }: Props) {
                 setCurrentImageIndex(0);
                 setFailedImage(null);
               }}
-              className="w-full appearance-none bg-transparent py-2.5 pr-8 text-xs text-[#27150e] outline-none transition-colors focus:border-[#27150e]"
+              className="block w-full appearance-none border-0 bg-transparent py-2.5 pr-8 text-xs text-[#27150e] outline-none transition-colors focus-visible:bg-[#ead9c8]/50"
             >
               {group.variants.map((variant, index) => (
                 <option key={variant.productId + "-" + variant.variantName} value={index}>
