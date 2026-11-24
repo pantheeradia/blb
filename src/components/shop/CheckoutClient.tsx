@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { LoaderCircle } from "lucide-react";
 import { useCartStore, lineKey, unitPrice } from "@/store/cart";
 import { formatPrice } from "@/lib/utils";
 import { getStoredAttribution } from "@/lib/utmCapture";
@@ -69,9 +70,14 @@ export function CheckoutClient() {
   const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount: number } | null>(null);
   const couponRequestInFlight = useRef(false);
   const paymentRequestInFlight = useRef(false);
+  const [confirmingOrder, setConfirmingOrder] = useState(false);
 
   const cartTotal = total();
   const finalTotal = appliedCoupon ? Math.max(0, cartTotal - appliedCoupon.discount) : cartTotal;
+
+  if (confirmingOrder) {
+    return <div role="status" aria-busy="true" className="flex flex-col items-center gap-4 py-24 text-[#8b5e3c]"><LoaderCircle size={28} className="animate-spin motion-reduce:animate-none" /><p>Opening your order confirmation...</p></div>;
+  }
 
   if (items.length === 0) {
     return (
@@ -162,6 +168,7 @@ export function CheckoutClient() {
           body: JSON.stringify({ customer: form, items: cartItems, couponCode, attribution }),
         });
         if (res.ok) {
+          setConfirmingOrder(true);
           clearCart();
           router.push("/checkout/success");
         } else {
@@ -214,6 +221,7 @@ export function CheckoutClient() {
                 body: JSON.stringify({ ...response, customer: form, attribution }),
               });
               if (verify.ok) {
+                setConfirmingOrder(true);
                 clearCart();
                 router.push("/checkout/success");
               } else {
@@ -365,7 +373,7 @@ export function CheckoutClient() {
                     disabled={couponLoading || !couponInput.trim()}
                     className="text-xs uppercase tracking-widest text-[#C9953C] border border-[#C9953C] px-3 py-2 hover:bg-[#C9953C] hover:text-[#1A0E08] transition-colors disabled:opacity-40"
                   >
-                    {couponLoading ? "..." : "Apply"}
+            {couponLoading ? "Checking..." : "Apply"}
                   </button>
                 </div>
                 {couponError && <p className="text-red-600 text-xs mt-1">{couponError}</p>}

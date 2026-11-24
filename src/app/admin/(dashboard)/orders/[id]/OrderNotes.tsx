@@ -20,18 +20,26 @@ export function OrderNotes({ orderId, notes }: Props) {
   const [text, setText] = useState("");
   const [noteType, setNoteType] = useState<"internal" | "customer">("internal");
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
   async function addNote() {
-    if (!text.trim()) return;
+    if (saving || !text.trim()) return;
     setSaving(true);
-    await fetch(`/api/admin/orders/${orderId}`, {
+    setError("");
+    try {
+    const response = await fetch(`/api/admin/orders/${orderId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ note: text.trim(), noteType }),
     });
+    if (!response.ok) throw new Error("Save failed");
     setText("");
-    setSaving(false);
     router.refresh();
+    } catch {
+      setError("Could not add the note. Please try again.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -54,7 +62,8 @@ export function OrderNotes({ orderId, notes }: Props) {
         </ul>
       )}
 
-      <div className="space-y-2">
+      <div className="space-y-2" aria-busy={saving}>
+        {error && <p role="alert" className="text-xs text-red-400">{error}</p>}
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}

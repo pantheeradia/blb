@@ -623,18 +623,31 @@ function ProductModal({
 export function DeleteProductButton({ id, name }: { id: number; name: string }) {
   const router = useRouter();
   const [confirming, setConfirming] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   async function doDelete() {
-    await fetch(`/api/admin/products/${id}`, { method: "DELETE" });
-    router.refresh();
+    if (deleting) return;
+    setDeleting(true);
+    setDeleteError("");
+    try {
+      const response = await fetch(`/api/admin/products/${id}`, { method: "DELETE" });
+      if (!response.ok) throw new Error("Delete failed");
+      router.refresh();
+    } catch {
+      setDeleteError("Could not delete. Please try again.");
+    } finally {
+      setDeleting(false);
+    }
   }
 
   if (confirming) {
     return (
       <span className="flex items-center gap-1 text-xs">
         <span className="text-gray-400">Delete &quot;{name}&quot;?</span>
-        <button onClick={doDelete} className="text-red-400 hover:text-red-300 underline">Yes</button>
-        <button onClick={() => setConfirming(false)} className="text-gray-500 hover:text-gray-300 underline ml-1">No</button>
+        <button onClick={doDelete} disabled={deleting} aria-busy={deleting} className="text-red-400 hover:text-red-300 underline disabled:opacity-50">{deleting ? "Deleting..." : "Yes"}</button>
+        <button onClick={() => setConfirming(false)} disabled={deleting} className="text-gray-500 hover:text-gray-300 underline ml-1 disabled:opacity-50">No</button>
+        {deleteError && <span role="alert" className="text-red-400">{deleteError}</span>}
       </span>
     );
   }

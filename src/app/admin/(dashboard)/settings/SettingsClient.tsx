@@ -51,6 +51,7 @@ export function SettingsClient({ rows }: { rows: Setting[] }) {
   });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState("");
 
   const labelMap: Record<string, string> = {
     ...DEFAULT_LABELS,
@@ -58,16 +59,25 @@ export function SettingsClient({ rows }: { rows: Setting[] }) {
   };
 
   async function save() {
+    if (saving) return;
     setSaving(true);
-    await fetch("/api/admin/settings", {
+    setSaved(false);
+    setError("");
+    try {
+    const response = await fetch("/api/admin/settings", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(values),
     });
-    setSaving(false);
+    if (!response.ok) throw new Error("Save failed");
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
     router.refresh();
+    } catch {
+      setError("Could not save settings. Please try again.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   const inputCls = "w-full bg-gray-800 border border-gray-700 text-gray-200 text-sm px-3 py-2 rounded focus:outline-none focus:border-amber-500";
@@ -77,7 +87,8 @@ export function SettingsClient({ rows }: { rows: Setting[] }) {
   const readOnly: string[] = [];
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5" aria-busy={saving}>
+      {error && <p role="alert" className="text-sm text-red-400">{error}</p>}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {EDITABLE_KEYS.map((key) => (
           <div key={key} className={multiline.includes(key) ? "md:col-span-2" : ""}>

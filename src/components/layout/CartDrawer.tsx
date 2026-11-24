@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { X, Plus, Minus, Trash2 } from "lucide-react";
@@ -8,6 +8,8 @@ import { useCartStore, lineKey, unitPrice } from "@/store/cart";
 import { formatPrice } from "@/lib/utils";
 
 export function CartDrawer() {
+  const drawerRef = useRef<HTMLElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
   const { isOpen, closeCart, items, updateQuantity, removeItem, total } =
     useCartStore();
 
@@ -17,21 +19,40 @@ export function CartDrawer() {
     return () => { document.body.style.overflow = ""; };
   }, [isOpen]);
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    if (!isOpen) return;
+    const previousFocus = document.activeElement as HTMLElement | null;
+    const frame = requestAnimationFrame(() => closeRef.current?.focus());
+    return () => { cancelAnimationFrame(frame); previousFocus?.focus(); };
+  }, [isOpen]);
 
   const cartTotal = total();
 
   return (
-    <>
+    <div
+      aria-hidden={!isOpen}
+      inert={!isOpen}
+      onKeyDown={(event) => {
+        if (event.key === "Escape") closeCart();
+        if (event.key !== "Tab") return;
+        const controls = drawerRef.current?.querySelectorAll<HTMLElement>('a[href], button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled)');
+        if (!controls?.length) return;
+        const first = controls[0];
+        const last = controls[controls.length - 1];
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+        if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+      }}
+      className={`fixed inset-0 z-[60] transition-[visibility] duration-0 ${isOpen ? "visible delay-0" : "invisible delay-[400ms] pointer-events-none"}`}
+    >
       <div
-        className="fixed inset-0 z-50 bg-black/50"
+        className={`absolute inset-0 bg-black/50 transition-opacity duration-[400ms] ease-out ${isOpen ? "opacity-100" : "opacity-0"}`}
         onClick={closeCart}
         aria-hidden="true"
       />
-      <aside className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-md bg-[#FAFAF8] flex flex-col shadow-xl">
+      <aside ref={drawerRef} role="dialog" aria-modal={isOpen ? true : undefined} aria-label="Shopping cart" className={`absolute right-0 top-0 bottom-0 w-full max-w-md bg-[#FAFAF8] flex flex-col shadow-xl transition-transform duration-[400ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform ${isOpen ? "translate-x-0" : "translate-x-full"}`}>
         <div className="flex items-center justify-between px-6 py-5 border-b border-[#D4C4B0]">
           <h2 className="font-serif text-lg text-[#1A0E08]">Your Cart</h2>
-          <button onClick={closeCart} aria-label="Close cart" className="text-[#8B5E3C] hover:text-[#1A0E08] transition-colors">
+          <button ref={closeRef} onClick={closeCart} aria-label="Close cart" className="flex h-11 w-11 items-center justify-center rounded-full text-[#8B5E3C] hover:bg-[#ead9c8] hover:text-[#1A0E08] transition-colors focus-visible:outline-2 focus-visible:outline-[#8f5e3b]">
             <X size={20} />
           </button>
         </div>
@@ -128,6 +149,6 @@ export function CartDrawer() {
           </div>
         )}
       </aside>
-    </>
+    </div>
   );
 }

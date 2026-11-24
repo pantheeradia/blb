@@ -13,7 +13,7 @@ export default function AboutPage() {
     <>
       <Nav />
       <CartDrawer />
-      <main className="min-h-screen bg-[#F7F0E6]">
+      <main className="min-h-screen bg-[#F7F0E6] pt-20">
         <section className="relative h-72 bg-[#1A0E08] flex items-end overflow-hidden">
           <Image
             src="/images/DB_Beans_01.webp"
@@ -29,8 +29,8 @@ export default function AboutPage() {
           </div>
         </section>
 
-        <div className="max-w-4xl mx-auto px-6 py-20">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-start">
+        <div className="max-w-6xl mx-auto px-6 py-12 sm:px-8 sm:py-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
             <div>
               <h2 className="font-serif text-3xl text-[#1A0E08] mb-6">
                 Born in Whitefield,<br/>Brewed with Purpose.
@@ -67,7 +67,7 @@ export default function AboutPage() {
             </div>
           </div>
 
-          <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+          <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
             {[
               { stat: "3,100 – 4,000 ft", label: "Estate Altitude" },
               { stat: "100%", label: "Freshly Roasted" },

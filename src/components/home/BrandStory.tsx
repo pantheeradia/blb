@@ -1,13 +1,13 @@
 import Link from "next/link";
-import Image from "next/image";
+import { LoadingImage as Image } from "@/components/LoadingImage";
 
 export function BrandStory() {
   return (
-    <section className="overflow-hidden bg-[#1A0E08] py-24">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+    <section className="overflow-hidden bg-[#1A0E08] py-12 sm:py-16">
+      <div className="max-w-7xl mx-auto px-6 sm:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
           <div className="reveal-on-scroll relative">
-            <div className="relative h-96 overflow-hidden md:h-[480px]">
+            <div className="relative h-80 overflow-hidden rounded-xl md:h-[400px]">
               <Image
                 src="/images/hero-image.jpeg"
                 alt="Bean Leaf Brew barista"
@@ -16,7 +16,6 @@ export function BrandStory() {
                 sizes="(max-width: 768px) 100vw, 50vw"
               />
             </div>
-            <div className="absolute -bottom-4 -right-4 h-32 w-32 border border-[#C9953C]/20 bg-[#C9953C]/10" />
           </div>
 
           <div className="reveal-on-scroll reveal-on-scroll-late">
@@ -28,12 +27,12 @@ export function BrandStory() {
               <br />
               Brewed with Purpose.
             </h2>
-            <p className="text-[#F7F0E6]/60 text-sm leading-relaxed mb-4">
+            <p className="text-[#F7F0E6]/75 text-sm leading-relaxed mb-4">
               We source directly from award-winning estates in Coorg and Chikmagalur,
               Karnataka — grown at elevations of 3,100 to 4,000 ft. Every batch is
               freshly profile-roasted in-house using state-of-the-art technology.
             </p>
-            <p className="text-[#F7F0E6]/60 text-sm leading-relaxed mb-8">
+            <p className="text-[#F7F0E6]/75 text-sm leading-relaxed mb-8">
               No middlemen. No stale stock. Just coffee that&apos;s honest and alive —
               packed immediately after roasting to lock in the aroma and freshness
               you deserve.

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
+import { LoadingImage as Image } from "@/components/LoadingImage";
 import { ChevronDown, ChevronLeft, ChevronRight, ShoppingBag } from "lucide-react";
 import { type ProductGroup } from "@/lib/groupProducts";
 import { type Product } from "@/types";

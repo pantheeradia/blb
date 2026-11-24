@@ -338,13 +338,21 @@ export function EditCouponButton({ coupon }: { coupon: CouponData }) {
 export function DeleteCouponButton({ id }: { id: number }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   async function handleDelete() {
-    if (!confirm("Delete this coupon?")) return;
+    if (loading || !confirm("Delete this coupon?")) return;
     setLoading(true);
-    await fetch(`/api/admin/coupons/${id}`, { method: "DELETE" });
+    setError("");
+    try {
+    const response = await fetch(`/api/admin/coupons/${id}`, { method: "DELETE" });
+    if (!response.ok) throw new Error("Delete failed");
     router.refresh();
-    setLoading(false);
+    } catch {
+      setError("Could not delete. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -353,7 +361,7 @@ export function DeleteCouponButton({ id }: { id: number }) {
       disabled={loading}
       className="text-red-400 hover:text-red-300 text-xs disabled:opacity-50 transition-colors"
     >
-      {loading ? "..." : "Delete"}
+      {loading ? "Deleting..." : error || "Delete"}
     </button>
   );
 }
@@ -361,16 +369,25 @@ export function DeleteCouponButton({ id }: { id: number }) {
 export function ToggleCouponButton({ id, active }: { id: number; active: boolean }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   async function handleToggle() {
+    if (loading) return;
     setLoading(true);
-    await fetch(`/api/admin/coupons/${id}`, {
+    setError("");
+    try {
+    const response = await fetch(`/api/admin/coupons/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ active: !active }),
     });
+    if (!response.ok) throw new Error("Update failed");
     router.refresh();
-    setLoading(false);
+    } catch {
+      setError("Update failed. Retry");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -383,7 +400,7 @@ export function ToggleCouponButton({ id, active }: { id: number; active: boolean
           : "bg-gray-800 text-gray-400 hover:bg-gray-700"
       }`}
     >
-      {loading ? "..." : active ? "Active" : "Inactive"}
+      {loading ? "Updating..." : error || (active ? "Active" : "Inactive")}
     </button>
   );
 }

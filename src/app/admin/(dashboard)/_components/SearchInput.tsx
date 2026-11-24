@@ -1,7 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useRef } from "react";
+import { useEffect, useRef, useTransition } from "react";
+import { LoaderCircle } from "lucide-react";
 
 interface Props {
   placeholder?: string;
@@ -14,6 +15,8 @@ interface Props {
 export function SearchInput({ placeholder = "Search...", defaultValue, pathname, baseParams }: Props) {
   const router = useRouter();
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const [pending, startTransition] = useTransition();
+  useEffect(() => () => clearTimeout(timer.current), []);
 
   function handleChange(val: string) {
     clearTimeout(timer.current);
@@ -22,12 +25,13 @@ export function SearchInput({ placeholder = "Search...", defaultValue, pathname,
       if (val.trim()) params.set("q", val.trim());
       else params.delete("q");
       const qs = params.toString();
-      router.push(qs ? `${pathname}?${qs}` : pathname);
+      startTransition(() => router.push(qs ? `${pathname}?${qs}` : pathname));
     }, 300);
   }
 
   return (
-    <div className="relative">
+    <div className="relative" aria-busy={pending}>
+      {pending && <span role="status" className="absolute right-3 top-1/2 -translate-y-1/2 text-amber-400"><LoaderCircle size={14} className="animate-spin motion-reduce:animate-none" /><span className="sr-only">Searching...</span></span>}
       <svg
         className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500 pointer-events-none"
         fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
@@ -39,7 +43,7 @@ export function SearchInput({ placeholder = "Search...", defaultValue, pathname,
         defaultValue={defaultValue}
         onChange={(e) => handleChange(e.target.value)}
         placeholder={placeholder}
-        className="bg-gray-800 border border-gray-700 text-gray-200 text-sm pl-8 pr-3 py-1.5 rounded focus:outline-none focus:border-amber-500 placeholder:text-gray-600 w-64"
+        className="bg-gray-800 border border-gray-700 text-gray-200 text-sm pl-8 pr-9 py-1.5 rounded focus:outline-none focus:border-amber-500 placeholder:text-gray-600 w-64"
       />
     </div>
   );
