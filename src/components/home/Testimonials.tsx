@@ -21,7 +21,7 @@ const testimonials = [
 
 export function Testimonials() {
   return (
-    <section id="testimonials" aria-labelledby="testimonials-heading" className="scroll-mt-20 border-b border-[#e7dfd4] bg-[#fcfaf6] py-14 sm:py-20">
+    <section id="testimonials" aria-labelledby="testimonials-heading" className="scroll-mt-20 border-b border-[#e7dfd4] bg-white py-14 sm:py-20">
       <div className="mx-auto max-w-7xl px-6 sm:px-8">
         <header className="mb-8 flex flex-col justify-between gap-5 sm:mb-10 lg:flex-row lg:items-end lg:gap-12">
           <div>

@@ -118,12 +118,13 @@ function useDebouncedValue<T>(value: T, delayMs: number): T {
 export function ShopClient({ products }: Props) {
   const searchParams = useSearchParams();
   const urlCategory = searchParams.get("category");
-  return <ShopCatalog key={urlCategory ?? "all"} products={products} urlCategory={urlCategory} />;
+  const urlQuery = searchParams.get("q") ?? "";
+  return <ShopCatalog key={JSON.stringify([urlCategory, urlQuery])} products={products} urlCategory={urlCategory} urlQuery={urlQuery} />;
 }
 
 const normalizeFilter = (value: string) => value.toLowerCase().replace(/[-_]/g, " ").replace(/\s+/g, " ").trim();
 
-function ShopCatalog({ products, urlCategory }: Props & { urlCategory: string | null }) {
+function ShopCatalog({ products, urlCategory, urlQuery }: Props & { urlCategory: string | null; urlQuery: string }) {
   const router = useRouter();
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
@@ -141,7 +142,7 @@ function ShopCatalog({ products, urlCategory }: Props & { urlCategory: string | 
   const [active, setActive] = useState(initialActive);
   const [selectedRoasts, setSelectedRoasts] = useState<string[]>([]);
   const [selectedEquipment, setSelectedEquipment] = useState<string[]>([]);
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(urlQuery);
   const [sort, setSort] = useState<SortValue>("featured");
   const [page, setPage] = useState(1);
   const debouncedQuery = useDebouncedValue(query, 200);
@@ -254,7 +255,7 @@ function ShopCatalog({ products, urlCategory }: Props & { urlCategory: string | 
   };
 
   return (
-    <section id="catalog" className="scroll-mt-20 bg-[#f3ece3]">
+    <section id="catalog" className="scroll-mt-20 bg-white">
       <div className="mx-auto max-w-7xl px-5 py-10 sm:px-8 sm:py-12">
         <header className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between md:gap-10">
           <div>

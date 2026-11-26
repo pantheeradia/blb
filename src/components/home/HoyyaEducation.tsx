@@ -12,7 +12,7 @@ const themes = {
 
 export function HoyyaEducation() {
   return (
-    <section id="discover-hoyya" aria-labelledby="hoyya-heading" className="overflow-hidden border-y border-[#e0d5c4] bg-[#faf6ee] py-14 sm:py-20">
+    <section id="discover-hoyya" aria-labelledby="hoyya-heading" className="overflow-hidden border-y border-[#e0d5c4] bg-white py-14 sm:py-20">
       <div className="mx-auto max-w-7xl px-6 sm:px-8">
         <header className="mb-9 grid gap-6 lg:mb-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-end lg:gap-16">
           <div>

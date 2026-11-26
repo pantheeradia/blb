@@ -1,6 +1,6 @@
 export default function ProductLoading() {
   return (
-    <main aria-busy="true" aria-label="Loading product" className="min-h-screen bg-[#f7f0e6] px-6 pb-16 pt-36">
+    <main aria-busy="true" aria-label="Loading product" className="min-h-screen bg-white px-6 pb-16 pt-36">
       <p role="status" className="sr-only">Loading product details...</p>
       <div aria-hidden="true" className="mx-auto grid max-w-7xl animate-pulse gap-12 motion-reduce:animate-none md:grid-cols-2">
         <div className="aspect-square bg-[#ead9c8]" />

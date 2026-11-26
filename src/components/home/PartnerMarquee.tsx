@@ -8,7 +8,7 @@ export function PartnerMarquee() {
   const marqueePartners = [...partners, ...partners];
 
   return (
-    <section className="bg-cream py-16 overflow-hidden">
+    <section className="bg-white py-16 overflow-hidden">
       <div className="max-w-7xl mx-auto px-6 mb-10">
         <div className="reveal-on-scroll text-center">
           <p className="text-[10px] uppercase tracking-[0.2em] text-[#79502c] mb-2">

@@ -36,7 +36,7 @@ export default async function ShopPage() {
     <>
       <Nav />
       <CartDrawer />
-      <main data-gentle-motion className="min-h-screen bg-[#f3ece3] pt-20">
+      <main data-gentle-motion className="min-h-screen bg-white pt-20">
         <Suspense fallback={<ShopSkeleton />}>
           <ShopClient products={products} />
         </Suspense>

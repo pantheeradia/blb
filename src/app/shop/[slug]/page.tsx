@@ -37,7 +37,7 @@ export default async function ProductPage({ params }: Props) {
     <>
       <Nav />
       <CartDrawer />
-      <main className="min-h-screen bg-[#F7F0E6] pt-20">
+      <main className="min-h-screen bg-white pt-20">
         <div className="max-w-7xl mx-auto px-6 py-16">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-start">
             <ProductImageGallery images={product.images} productName={product.name} />

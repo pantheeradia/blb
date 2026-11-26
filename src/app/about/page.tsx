@@ -15,7 +15,7 @@ export default function AboutPage() {
     <>
       <Nav />
       <CartDrawer />
-      <main className="min-h-screen bg-[#F7F0E6] pt-20">
+      <main className="min-h-screen bg-white pt-20">
         <section className="relative h-72 bg-[#1A0E08] flex items-end overflow-hidden">
           <Image
             src="/images/DB_Beans_01.webp"
