@@ -1,6 +1,6 @@
 export default function ShopLoading() {
   return (
-    <main className="min-h-screen bg-[#f3ece3]" aria-label="Loading shop" aria-busy="true">
+    <main className="min-h-screen bg-white" aria-label="Loading shop" aria-busy="true">
       <p role="status" className="sr-only">Loading products...</p>
       <div className="h-20 bg-[#f8f2e9]" />
       <div className="mx-auto max-w-[1440px] animate-pulse px-6 py-14">

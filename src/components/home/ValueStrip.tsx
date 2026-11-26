@@ -9,7 +9,7 @@ const values = [
 
 export function ValueStrip() {
   return (
-    <section aria-label="Why choose Bean Leaf Brew" className="border-y border-[#d8c7b3] bg-[#fffaf2]">
+    <section aria-label="Why choose Bean Leaf Brew" className="border-y border-[#d8c7b3] bg-white">
       <div className="mx-auto grid max-w-7xl grid-cols-2 px-6 md:grid-cols-4">
         {values.map(({ icon: Icon, title, text }, index) => (
           <div

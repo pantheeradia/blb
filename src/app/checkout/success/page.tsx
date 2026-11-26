@@ -10,7 +10,7 @@ export default function SuccessPage() {
     <>
       <Nav />
       <CartDrawer />
-      <main className="min-h-screen bg-[#F7F0E6] flex items-center justify-center px-6 pb-12 pt-32">
+      <main className="min-h-screen bg-white flex items-center justify-center px-6 pb-12 pt-32">
         <div className="text-center max-w-md">
           <div className="w-16 h-16 rounded-full bg-[#EAD9C8] flex items-center justify-center mx-auto mb-6">
             <span className="text-2xl text-[#C9953C]">✓</span>

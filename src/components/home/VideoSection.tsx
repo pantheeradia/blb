@@ -80,7 +80,7 @@ export function VideoSection() {
   }))];
 
   return (
-    <section id="videos" aria-labelledby="videos-heading" className="scroll-mt-20 border-t border-[#e5d9c9] bg-[#f5efe6] py-12 sm:py-16">
+    <section id="videos" aria-labelledby="videos-heading" className="scroll-mt-20 border-t border-[#e5d9c9] bg-white py-12 sm:py-16">
       <div className="mx-auto max-w-[1440px] px-6 sm:px-10">
         <header className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-end">
           <div>

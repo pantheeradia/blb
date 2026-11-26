@@ -76,26 +76,26 @@ export function Hero() {
               </div>
 
               <h1 className="max-w-[13ch] font-serif text-[clamp(2.6rem,4.5vw,4.5rem)] leading-[1.02] tracking-[-0.035em] text-[#fffaf2] text-balance">
-                Better coffee, made personal.
+                Your morning coffee, roasted in Whitefield.
               </h1>
 
-              <p className="mt-4 max-w-sm text-sm leading-6 text-[#fffaf2]/85 sm:text-[15px]">
-                Freshly profile-roasted coffee from Karnataka&apos;s finest estates, prepared for the way you brew at home.
+              <p className="mt-4 max-w-md text-base leading-7 text-[#fffaf2]/95">
+                Shop whole beans and ground coffee from Karnataka estates, or pick an instant blend for a quicker cup.
               </p>
 
               <div className="mt-5 flex flex-wrap items-center gap-4">
                 <Link
                   href="/shop"
-                  className="group inline-flex min-h-12 items-center gap-3 bg-[#d7a35f] px-6 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#20110c] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#e2b979] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#d7a35f] active:translate-y-0"
+                  className="group inline-flex min-h-12 items-center gap-3 bg-[#d7a35f] px-6 text-sm font-semibold tracking-wide text-[#20110c] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#e2b979] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#d7a35f] active:translate-y-0"
                 >
                   Shop coffee
                   <ArrowUpRight size={15} className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                 </Link>
                 <Link
-                  href="/about"
-                  className="px-2 py-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#fffaf2] underline decoration-[#d7a35f] underline-offset-8 transition-colors hover:text-[#d7a35f] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#d7a35f]"
+                  href="#collections"
+                  className="px-2 py-3 text-sm font-semibold tracking-wide text-[#fffaf2] underline decoration-[#d7a35f] underline-offset-8 transition-colors hover:text-[#d7a35f] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#d7a35f]"
                 >
-                  Meet the roastery
+                  Browse by category
                 </Link>
               </div>
 

@@ -12,7 +12,7 @@ export default function ContactPage() {
     <>
       <Nav />
       <CartDrawer />
-      <main className="min-h-screen bg-[#F7F0E6] pt-20">
+      <main className="min-h-screen bg-white pt-20">
         <div className="max-w-6xl mx-auto px-6 py-12 sm:px-8 sm:py-16">
           <div className="mb-12">
             <p className="text-[10px] uppercase tracking-[0.2em] text-[#C9953C] mb-2">Get in Touch</p>
@@ -23,7 +23,7 @@ export default function ContactPage() {
             <div className="md:col-span-2">
               <div className="space-y-6 text-sm text-[#4A2512]">
                 <div>
-                  <p className="text-[10px] uppercase tracking-widest text-[#8B5E3C] mb-1">Address</p>
+                  <p id="location" className="scroll-mt-28 text-[10px] uppercase tracking-widest text-[#8B5E3C] mb-1">Address</p>
                   <p className="leading-relaxed">
                     Prime Square, Unit 303, 3rd Floor,<br/>
                     Whitefield Main Road,<br/>

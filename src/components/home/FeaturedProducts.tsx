@@ -13,11 +13,12 @@ interface Props {
 
 function ProductAction({ product }: { product: Product }) {
   const { addItem } = useCartStore();
+  const needsOptions = requiresOptionSelection(product.category, product.weightOptions ?? [], product.brewingEquipmentOptions ?? []) || (product.options?.variants.length ?? 0) > 0;
   const actionClass = "flex min-h-11 w-full items-center justify-between rounded-full border border-[#38251a] bg-transparent px-4 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#38251a] transition-colors hover:bg-[#38251a] hover:text-[#fffaf2] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#8f5e3b]";
-  const content = <><span>{product.inStock ? "Buy now" : "Sold out"}</span><span aria-hidden="true" className="ml-3 flex h-6 w-7 items-center justify-end border-l border-current/25"><Plus size={16} /></span></>;
+  const content = <><span>{!product.inStock ? "Sold out" : needsOptions ? "Choose options" : "Add to bag"}</span><span aria-hidden="true" className="ml-3 flex h-6 w-7 items-center justify-end border-l border-current/25"><Plus size={16} /></span></>;
 
   if (!product.inStock) return <button type="button" disabled className={`${actionClass} cursor-not-allowed opacity-50`}>{content}</button>;
-  if (requiresOptionSelection(product.category, product.weightOptions ?? [], product.brewingEquipmentOptions ?? []) || (product.options?.variants.length ?? 0) > 0) {
+  if (needsOptions) {
     return <Link href={`/shop/${product.slug}`} aria-label={`Buy ${product.name} - choose options`} className={actionClass}>{content}</Link>;
   }
   return <button type="button" aria-label={`Add ${product.name} to bag`} onClick={() => addItem(product)} className={actionClass}>{content}</button>;
@@ -36,7 +37,7 @@ export function FeaturedProducts({ products }: Props) {
   }));
 
   return (
-    <section id="bestsellers" aria-labelledby="bestsellers-heading" className="scroll-mt-20 overflow-hidden border-y border-[#e5dacb] bg-[#f5efe6] py-12 sm:py-16">
+    <section id="bestsellers" aria-labelledby="bestsellers-heading" className="scroll-mt-20 overflow-hidden border-y border-[#e5dacb] bg-white py-12 sm:py-16">
       <div className="mx-auto max-w-7xl px-6 sm:px-10">
         <header className="mb-2 flex flex-wrap items-end justify-between gap-5">
           <div>

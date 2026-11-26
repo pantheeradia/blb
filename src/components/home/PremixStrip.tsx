@@ -164,7 +164,7 @@ export function PremixStrip({ products }: Props) {
   if (visibleProducts.length === 0) return null;
 
   return (
-    <section className="relative overflow-hidden bg-[#e9dccb] py-20 sm:py-28">
+    <section className="relative overflow-hidden bg-white py-20 sm:py-28">
       <div
         aria-hidden="true"
         className="absolute -right-24 -top-24 size-80 rounded-full bg-[#c99243]/10 blur-3xl"

@@ -1,17 +1,14 @@
 import type { Metadata } from "next";
-import { Inter, Playfair_Display } from "next/font/google";
+import localFont from "next/font/local";
 import { WhatsAppButton } from "@/components/layout/WhatsAppButton";
 import { UtmTracker } from "@/components/UtmTracker";
 import "./globals.css";
 
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-});
-
-const playfair = Playfair_Display({
-  variable: "--font-playfair",
-  subsets: ["latin"],
+const geist = localFont({
+  src: "../../node_modules/next/dist/next-devtools/server/font/geist-latin.woff2",
+  variable: "--font-geist",
+  weight: "100 900",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -31,7 +28,7 @@ export default function RootLayout({
       <head>
         <link rel="preload" as="image" href="/images/HB_03.webp" />
       </head>
-      <body className={`${inter.variable} ${playfair.variable} antialiased`}>
+      <body className={`${geist.variable} antialiased`}>
         <UtmTracker />
         {children}
         <WhatsAppButton />

@@ -43,16 +43,14 @@ export function BrandStory() {
                 href="/about"
                 className="text-xs uppercase tracking-widest text-[#C9953C] border-b border-[#C9953C] pb-0.5 hover:opacity-80 transition-opacity"
               >
-                Read our story →
+                Read our story
               </Link>
-              <button
-                type="button"
-                disabled
+              <Link href="/contact#location"
                 className="inline-flex items-center gap-2 border-b border-[#C9953C] pb-0.5 text-xs uppercase tracking-widest text-[#C9953C]"
               >
                 <MapPin size={14} aria-hidden="true" />
                 Find BLB Near You
-              </button>
+              </Link>
             </div>
           </div>
         </div>

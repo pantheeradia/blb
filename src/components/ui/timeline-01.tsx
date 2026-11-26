@@ -27,7 +27,7 @@ const timelineData: TimelineItem[] = [
 
 export default function TimelineBlock01() {
   return (
-    <section aria-labelledby="story-timeline-heading" className="overflow-hidden bg-[#f7f0e6] text-[#302016]">
+    <section aria-labelledby="story-timeline-heading" className="overflow-hidden bg-white text-[#302016]">
       <div className="mx-auto max-w-7xl px-4 md:px-8 lg:px-12">
         <div className="border-x border-b border-[#d4c4b0] px-6 py-10 md:px-10 md:py-14 lg:px-16 lg:py-16">
           <div className="max-w-2xl space-y-5">
